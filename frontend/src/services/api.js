@@ -21,13 +21,17 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Handle 401 globally
+// Response interceptor – handle 401 gracefully
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('userInfo');
-      window.location.href = '/login';
+      // Only redirect if we are NOT already on the login page
+      if (window.location.pathname !== '/login') {
+        localStorage.removeItem('userInfo');
+        window.location.href = '/login';
+      }
+      // For login page, just reject so the component can show the error
     }
     return Promise.reject(error);
   }

@@ -19,8 +19,7 @@ export const register = createAsyncThunk(
   async ({ name, email, password }, { rejectWithValue }) => {
     try {
       const response = await api.post('/auth/register', { name, email, password });
-      localStorage.setItem('userInfo', JSON.stringify(response.data));
-      return response.data;
+      return { success: true, message: response.data.message };
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Registration failed');
     }
@@ -38,10 +37,14 @@ const authSlice = createSlice({
     userInfo: localStorage.getItem('userInfo') ? JSON.parse(localStorage.getItem('userInfo')) : null,
     loading: false,
     error: null,
+    registrationMessage: null,
   },
   reducers: {
     clearError: (state) => {
       state.error = null;
+    },
+    clearRegistrationMessage: (state) => {
+      state.registrationMessage = null;
     },
   },
   extraReducers: (builder) => {
@@ -49,12 +52,15 @@ const authSlice = createSlice({
       .addCase(login.pending, (state) => { state.loading = true; state.error = null; })
       .addCase(login.fulfilled, (state, action) => { state.loading = false; state.userInfo = action.payload; })
       .addCase(login.rejected, (state, action) => { state.loading = false; state.error = action.payload; })
-      .addCase(register.pending, (state) => { state.loading = true; state.error = null; })
-      .addCase(register.fulfilled, (state, action) => { state.loading = false; state.userInfo = action.payload; })
+      .addCase(register.pending, (state) => { state.loading = true; state.error = null; state.registrationMessage = null; })
+      .addCase(register.fulfilled, (state, action) => { 
+        state.loading = false; 
+        state.registrationMessage = action.payload.message; 
+      })
       .addCase(register.rejected, (state, action) => { state.loading = false; state.error = action.payload; })
       .addCase(logout.fulfilled, (state) => { state.userInfo = null; });
   },
 });
 
-export const { clearError } = authSlice.actions;
+export const { clearError, clearRegistrationMessage } = authSlice.actions;
 export default authSlice.reducer;

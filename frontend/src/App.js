@@ -5,6 +5,8 @@ import Header from './components/Layout/Header';
 import Footer from './components/Layout/Footer';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import ResendVerificationPage from './pages/ResendVerificationPage';
+import EmailVerificationPage from './pages/EmailVerificationPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import PrivateRoute from './components/Common/PrivateRoute';
@@ -27,6 +29,8 @@ function App() {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/resend-verification" element={<ResendVerificationPage />} />
+            <Route path="/verify-email" element={<EmailVerificationPage />} />
             <Route path="/profile" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
             <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
           </Routes>
