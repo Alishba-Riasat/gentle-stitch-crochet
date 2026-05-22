@@ -2,7 +2,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../../services/api';
 
-// ========== LOCALSTORAGE HELPERS (same as wishlist) ==========
+// ========== LOCALSTORAGE HELPERS ==========
 const loadCartFromStorage = () => {
   try {
     const stored = localStorage.getItem('cart');
@@ -159,56 +159,69 @@ const cartSlice = createSlice({
       .addCase(fetchCart.pending, (state) => { state.loading = true; })
       .addCase(fetchCart.fulfilled, (state, action) => {
         state.loading = false;
-        state.items = action.payload.items.map(item => ({
-          productId: item.product._id,
-          name: item.name,
-          price: item.price,
-          image: item.image,
-          stock: item.stock,
-          quantity: item.quantity,
-        }));
-        state.totalQuantity = action.payload.totalQuantity;
-        state.totalAmount = action.payload.totalAmount;
+        // SAFE mapping: handle null product references
+        state.items = (action.payload.items || []).map(item => {
+          const product = item.product || {};
+          return {
+            productId: product._id || item.productId || '',
+            name: item.name || '',
+            price: item.price || 0,
+            image: item.image || '',
+            stock: item.stock || 0,
+            quantity: item.quantity || 0,
+          };
+        });
+        state.totalQuantity = action.payload.totalQuantity || 0;
+        state.totalAmount = action.payload.totalAmount || 0;
         saveCartToStorage({ items: state.items, totalQuantity: state.totalQuantity, totalAmount: state.totalAmount });
       })
       .addCase(fetchCart.rejected, (state, action) => { state.loading = false; state.error = action.payload; })
       .addCase(addToCartBackend.fulfilled, (state, action) => {
-        state.items = action.payload.items.map(item => ({
-          productId: item.product._id,
-          name: item.name,
-          price: item.price,
-          image: item.image,
-          stock: item.stock,
-          quantity: item.quantity,
-        }));
-        state.totalQuantity = action.payload.totalQuantity;
-        state.totalAmount = action.payload.totalAmount;
+        state.items = (action.payload.items || []).map(item => {
+          const product = item.product || {};
+          return {
+            productId: product._id || item.productId || '',
+            name: item.name || '',
+            price: item.price || 0,
+            image: item.image || '',
+            stock: item.stock || 0,
+            quantity: item.quantity || 0,
+          };
+        });
+        state.totalQuantity = action.payload.totalQuantity || 0;
+        state.totalAmount = action.payload.totalAmount || 0;
         saveCartToStorage({ items: state.items, totalQuantity: state.totalQuantity, totalAmount: state.totalAmount });
       })
       .addCase(updateCartItemBackend.fulfilled, (state, action) => {
-        state.items = action.payload.items.map(item => ({
-          productId: item.product._id,
-          name: item.name,
-          price: item.price,
-          image: item.image,
-          stock: item.stock,
-          quantity: item.quantity,
-        }));
-        state.totalQuantity = action.payload.totalQuantity;
-        state.totalAmount = action.payload.totalAmount;
+        state.items = (action.payload.items || []).map(item => {
+          const product = item.product || {};
+          return {
+            productId: product._id || item.productId || '',
+            name: item.name || '',
+            price: item.price || 0,
+            image: item.image || '',
+            stock: item.stock || 0,
+            quantity: item.quantity || 0,
+          };
+        });
+        state.totalQuantity = action.payload.totalQuantity || 0;
+        state.totalAmount = action.payload.totalAmount || 0;
         saveCartToStorage({ items: state.items, totalQuantity: state.totalQuantity, totalAmount: state.totalAmount });
       })
       .addCase(removeCartItemBackend.fulfilled, (state, action) => {
-        state.items = action.payload.items.map(item => ({
-          productId: item.product._id,
-          name: item.name,
-          price: item.price,
-          image: item.image,
-          stock: item.stock,
-          quantity: item.quantity,
-        }));
-        state.totalQuantity = action.payload.totalQuantity;
-        state.totalAmount = action.payload.totalAmount;
+        state.items = (action.payload.items || []).map(item => {
+          const product = item.product || {};
+          return {
+            productId: product._id || item.productId || '',
+            name: item.name || '',
+            price: item.price || 0,
+            image: item.image || '',
+            stock: item.stock || 0,
+            quantity: item.quantity || 0,
+          };
+        });
+        state.totalQuantity = action.payload.totalQuantity || 0;
+        state.totalAmount = action.payload.totalAmount || 0;
         saveCartToStorage({ items: state.items, totalQuantity: state.totalQuantity, totalAmount: state.totalAmount });
       })
       .addCase(clearCartBackend.fulfilled, (state) => {
@@ -218,16 +231,19 @@ const cartSlice = createSlice({
         saveCartToStorage({ items: [], totalQuantity: 0, totalAmount: 0 });
       })
       .addCase(mergeGuestCartBackend.fulfilled, (state, action) => {
-        state.items = action.payload.items.map(item => ({
-          productId: item.product._id,
-          name: item.name,
-          price: item.price,
-          image: item.image,
-          stock: item.stock,
-          quantity: item.quantity,
-        }));
-        state.totalQuantity = action.payload.totalQuantity;
-        state.totalAmount = action.payload.totalAmount;
+        state.items = (action.payload.items || []).map(item => {
+          const product = item.product || {};
+          return {
+            productId: product._id || item.productId || '',
+            name: item.name || '',
+            price: item.price || 0,
+            image: item.image || '',
+            stock: item.stock || 0,
+            quantity: item.quantity || 0,
+          };
+        });
+        state.totalQuantity = action.payload.totalQuantity || 0;
+        state.totalAmount = action.payload.totalAmount || 0;
         saveCartToStorage({ items: state.items, totalQuantity: state.totalQuantity, totalAmount: state.totalAmount });
       });
   },

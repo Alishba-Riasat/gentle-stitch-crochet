@@ -22,6 +22,9 @@ import FAQPage from './pages/FAQPage';
 import CartPage from './pages/CartPage';
 import ScrollToTop from './components/Common/ScrollToTop';
 import ProfilePage from './pages/ProfilePage';
+import OrderDetailPage from './pages/OrderDetailPage';
+import CheckoutPage from './pages/CheckoutPage';
+import OrderSuccessPage from './pages/OrderSuccessPage';
 
 
 
@@ -49,8 +52,11 @@ function App() {
             <Route path="/shop" element={<ShopPage />} />
             <Route path="/product/:id" element={<ProductDetailPage />} />
             <Route path="/cart" element={<CartPage />} />
+            <Route path="/order/:id" element={<PrivateRoute><OrderDetailPage /></PrivateRoute>} />
             <Route path="/profile" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
             <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+            <Route path="/checkout" element={<CheckoutPage />} />
+            <Route path="/order-success/:id" element={<OrderSuccessPage />} />
           </Routes>
         </main>
         <Footer />

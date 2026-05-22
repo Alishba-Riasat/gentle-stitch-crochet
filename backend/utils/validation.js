@@ -44,6 +44,18 @@ const handleValidationErrors = (req, res, next) => {
   next();
 };
 
+
+const validateOrder = [
+  body('shippingAddress.street').notEmpty().withMessage('Street address required'),
+  body('shippingAddress.city').notEmpty().withMessage('City required'),
+  body('shippingAddress.state').optional(),
+  body('shippingAddress.zipCode').optional(),
+  body('shippingAddress.postalCode').optional(),
+  body('shippingAddress.country').notEmpty().withMessage('Country required'),
+  body('shippingAddress.phone').notEmpty().withMessage('Phone number required'),
+];
+
+
 // ========== SINGLE EXPORT ==========
 module.exports = {
   // Auth
@@ -54,6 +66,7 @@ module.exports = {
   // Product
   validateProduct,
   validateReview,
+  validateOrder,
   // Common
   handleValidationErrors,
 };
