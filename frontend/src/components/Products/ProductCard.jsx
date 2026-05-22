@@ -1,16 +1,16 @@
- 
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { addToWishlist, removeFromWishlist } from '../../redux/slices/wishlistSlice';
 import { HeartIcon as HeartOutline } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolid } from '@heroicons/react/24/solid';
+import { useCartActions } from '../../hooks/useCart';
 
 const ProductCard = ({ product, showAddToCart = false }) => {
   const dispatch = useDispatch();
   const wishlistItems = useSelector((state) => state.wishlist.items);
   const isInWishlist = wishlistItems.includes(product._id);
+  const { addToCart } = useCartActions();
 
   const images = product.images || [];
   const mainImage = images.find(img => img.isMain) || images[0];
@@ -20,10 +20,6 @@ const ProductCard = ({ product, showAddToCart = false }) => {
   const emptyStars = 5 - fullStars;
   const isOnSale = product.comparePrice && product.comparePrice > product.price;
 
-  const handleAddToCart = () => {
-    alert(`Added ${product.name} to cart (cart not implemented yet)`);
-  };
-
   const toggleWishlist = () => {
     if (isInWishlist) {
       dispatch(removeFromWishlist(product._id));
@@ -32,9 +28,12 @@ const ProductCard = ({ product, showAddToCart = false }) => {
     }
   };
 
+  const handleAddToCart = () => {
+    addToCart(product, 1);
+  };
+
   return (
     <div className="group bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 ease-in-out relative">
-      {/* Wishlist Heart Button (top right) */}
       <button
         onClick={toggleWishlist}
         className="absolute top-2 right-2 z-10 bg-white/80 rounded-full p-1.5 shadow-sm hover:bg-white transition"
@@ -82,7 +81,7 @@ const ProductCard = ({ product, showAddToCart = false }) => {
         {showAddToCart && (
           <button
             onClick={handleAddToCart}
-            className="mt-3 w-full bg-gray-100 text-gray-800 text-sm py-2 rounded-lg hover:bg-primary hover:text-white transition-colors duration-200 font-medium"
+            className="mt-3 w-full bg-gray-100 text-gray-800 text-sm py-2 rounded-lg hover:bg-primary hover:text-white active:bg-primary/80 active:scale-95 transition-all duration-200 font-medium"
           >
             Add to Cart
           </button>
@@ -93,6 +92,3 @@ const ProductCard = ({ product, showAddToCart = false }) => {
 };
 
 export default ProductCard;
-
-
-
