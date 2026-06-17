@@ -39,6 +39,7 @@ const authSlice = createSlice({
     error: null,
     registrationMessage: null,
   },
+  
   reducers: {
     clearError: (state) => {
       state.error = null;
@@ -46,6 +47,10 @@ const authSlice = createSlice({
     clearRegistrationMessage: (state) => {
       state.registrationMessage = null;
     },
+    setUserInfo: (state, action) => {
+    state.userInfo = action.payload;
+    localStorage.setItem('userInfo', JSON.stringify(action.payload));
+  },
   },
   extraReducers: (builder) => {
     builder
@@ -62,5 +67,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { clearError, clearRegistrationMessage } = authSlice.actions;
+export const { setUserInfo, clearError, clearRegistrationMessage } = authSlice.actions;
 export default authSlice.reducer;

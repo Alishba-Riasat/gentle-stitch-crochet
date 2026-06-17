@@ -6,6 +6,8 @@ import ProductReviews from '../components/Products/ProductReviews';
 import ProductCard from '../components/Products/ProductCard';
 import { useCartActions } from '../hooks/useCart';
 import api from '../services/api';
+import { StarIcon as StarOutline } from '@heroicons/react/24/outline';
+import { StarIcon as StarSolid } from '@heroicons/react/24/solid';
 
 const ProductDetailPage = () => {
   const { id } = useParams();
@@ -32,7 +34,6 @@ const ProductDetailPage = () => {
       setLoadingRelated(true);
       try {
         const res = await api.get(`/products?category=${product.category.slug}&limit=12`);
-        // Filter out the current product
         const filtered = res.data.products.filter(p => p._id !== product._id);
         setRelatedProducts(filtered.slice(0, 10));
       } catch (err) {
@@ -62,20 +63,26 @@ const ProductDetailPage = () => {
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <div className="grid md:grid-cols-2 gap-8">
-        {/* Images */}
+        {/* Images – now with object-contain to prevent cropping */}
         <div>
-          <div className="border rounded-lg overflow-hidden mb-2">
-            <img src={mainImage} alt={product.name} className="w-full h-96 object-cover" />
+          <div className="border rounded-lg overflow-hidden bg-gray-50 flex items-center justify-center">
+            <img
+              src={mainImage}
+              alt={product.name}
+              className="w-full h-96 object-contain"
+            />
           </div>
           {product.images && product.images.length > 1 && (
-            <div className="flex gap-2 overflow-x-auto">
+            <div className="flex gap-2 overflow-x-auto mt-2">
               {product.images.map((img, idx) => (
                 <img
                   key={idx}
                   src={img.url}
                   alt={`Thumb ${idx}`}
                   onClick={() => setMainImage(img.url)}
-                  className={`w-20 h-20 object-cover border rounded cursor-pointer ${mainImage === img.url ? 'border-primary ring-2 ring-primary' : ''}`}
+                  className={`w-20 h-20 object-cover border rounded cursor-pointer transition ${
+                    mainImage === img.url ? 'border-primary ring-2 ring-primary' : 'border-gray-200 hover:border-primary'
+                  }`}
                 />
               ))}
             </div>
@@ -87,7 +94,8 @@ const ProductDetailPage = () => {
           <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
           <div className="flex items-center mb-2">
             <div className="flex text-yellow-400">
-              {'★'.repeat(Math.floor(product.rating))}{'☆'.repeat(5 - Math.floor(product.rating))}
+              {'★'.repeat(Math.floor(product.rating))}
+              {'☆'.repeat(5 - Math.floor(product.rating))}
             </div>
             <span className="ml-2 text-sm text-gray-600">({product.numReviews} reviews)</span>
           </div>
@@ -98,7 +106,6 @@ const ProductDetailPage = () => {
             )}
           </div>
           <div className="mb-4">
-            
             <p className={product.stock > 0 ? 'text-green-600' : 'text-red-600'}>
               {product.stock > 0 ? 'In Stock' : 'Out of Stock'}
             </p>
@@ -106,22 +113,92 @@ const ProductDetailPage = () => {
           {product.stock > 0 && (
             <div className="flex items-center gap-4 mb-6">
               <div className="flex items-center border rounded">
-                <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="px-3 py-1 border-r">-</button>
-                <span className="px-4 py-1">{quantity}</span>
-                <button onClick={() => setQuantity(Math.min(product.stock, quantity + 1))} className="px-3 py-1 border-l">+</button>
+                <button
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  className="px-3 py-1 border-r hover:bg-gray-100"
+                >
+                  -
+                </button>
+                <span className="px-4 py-1 min-w-[3rem] text-center">{quantity}</span>
+                <button
+                  onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
+                  className="px-3 py-1 border-l hover:bg-gray-100"
+                >
+                  +
+                </button>
               </div>
-              <button className="btn-primary active:bg-primary/80 active:scale-95 transition-all duration-200  px-6 py-2" onClick={handleAddToCart}>
+              <button
+                className="btn-primary px-6 py-2 active:scale-95 transition-all duration-200"
+                onClick={handleAddToCart}
+              >
                 Add to Cart
               </button>
             </div>
           )}
           <div className="border-t border-gray-200 mb-8"></div>
-          <p className="text-gray-700 mb-4">{product.description}</p>
+          <p className="text-gray-700 leading-relaxed">{product.description}</p>
         </div>
       </div>
 
-      {/* Reviews section */}
-      <ProductReviews product={product} productId={product._id} />
+      {/* Reviews Section – modern and stylish */}
+      <div className="mt-12">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-gray-800">Customer Reviews</h2>
+          {product.numReviews > 0 && (
+            <div className="flex items-center gap-1">
+              <div className="flex text-yellow-400">
+                {'★'.repeat(Math.floor(product.rating))}
+                {'☆'.repeat(5 - Math.floor(product.rating))}
+              </div>
+              <span className="text-gray-600 text-sm ml-1">({product.numReviews})</span>
+            </div>
+          )}
+        </div>
+        <div className="border-t border-gray-200 mb-6"></div>
+
+        {product.reviews && product.reviews.length > 0 ? (
+          <div className="space-y-6">
+            {product.reviews.map((review, idx) => (
+              <div key={idx} className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                <div className="flex items-start gap-4">
+                  {/* Avatar (initials) */}
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">
+                    {review.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex flex-wrap justify-between items-start gap-2">
+                      <div>
+                        <p className="font-semibold text-gray-800">{review.name}</p>
+                        <p className="text-xs text-gray-400 mt-1">
+                          {new Date(review.createdAt).toLocaleDateString('en-PK', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                          })}
+                        </p>
+                      </div>
+                      <div className="flex text-yellow-400">
+                        {[...Array(5)].map((_, i) =>
+                          i < review.rating ? (
+                            <StarSolid key={i} className="h-4 w-4" />
+                          ) : (
+                            <StarOutline key={i} className="h-4 w-4" />
+                          )
+                        )}
+                      </div>
+                    </div>
+                    <p className="mt-3 text-gray-600 leading-relaxed">{review.comment}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="bg-gray-50 rounded-xl p-8 text-center">
+            <p className="text-gray-500">No reviews yet. Be the first to review!</p>
+          </div>
+        )}
+      </div>
 
       {/* You may also like section */}
       <div className="mt-16">

@@ -1,9 +1,17 @@
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 const Order = require('../models/Order');
 const Cart = require('../models/Cart');
 const Product = require('../models/Product');
 const sendEmail = require('../utils/sendEmail');
 const User = require('../models/User');
+const crypto = require('crypto');
+const {
+  generateReviewTokensForOrder,
+  sendReviewInvitation,
+} = require('./reviewController');
+
+const escapeRegex = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 // Helper to optionally authenticate user from token (for public routes)
 const optionalAuth = async (req) => {
@@ -20,55 +28,171 @@ const optionalAuth = async (req) => {
 };
 
 // ---------- Helper: Send order status email ----------
-const sendOrderStatusEmail = async (order, oldStatus, newStatus, trackingNumber = null) => {
-  let userEmail = order.guestEmail;
-  if (order.user) {
-    const user = await order.user?.email ? order.user : await User.findById(order.user).select('email');
-    userEmail = user?.email;
-  }
-  if (!userEmail) return;
-
-  let subject = '';
-  let html = '';
-  const baseStyle = 'font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;';
-  const orderLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/order/${order._id}`;
-
-  switch (newStatus) {
-    case 'pending':
-      subject = `Order Confirmation #${order._id}`;
-      html = `<div style="${baseStyle}"><h2 style="color: #8B5A2B;">Thank you for your order!</h2><p>Your order has been received and is pending confirmation.</p><p><strong>Order ID:</strong> ${order._id}</p><p><strong>Total:</strong> Rs. ${order.totalPrice.toFixed(2)}</p><p><strong>Payment:</strong> Cash on Delivery</p><p>You will receive another email once your order is confirmed.</p><a href="${orderLink}" style="background: #8B5A2B; color: white; padding: 8px 16px; text-decoration: none; border-radius: 4px;">Track Order</a></div>`;
-      break;
-    case 'processing':
-      subject = `Order Confirmed #${order._id}`;
-      html = `<div style="${baseStyle}"><h2 style="color: #8B5A2B;">Your order has been confirmed!</h2><p>We are preparing your items for shipment.</p><p><strong>Order ID:</strong> ${order._id}</p><p>Estimated processing: 1‑2 business days.</p><a href="${orderLink}" style="background: #8B5A2B; color: white; padding: 8px 16px; text-decoration: none; border-radius: 4px;">Track Order</a></div>`;
-      break;
-    case 'shipped':
-      subject = `Order Shipped #${order._id}`;
-      const trackingHtml = trackingNumber ? `<p><strong>Tracking Number:</strong> ${trackingNumber}</p>` : '';
-      html = `<div style="${baseStyle}"><h2 style="color: #8B5A2B;">Your order is on the way!</h2><p>Your order has been shipped.</p>${trackingHtml}<p>You can track your package using the link below.</p><a href="${orderLink}" style="background: #8B5A2B; color: white; padding: 8px 16px; text-decoration: none; border-radius: 4px;">Track Order</a></div>`;
-      break;
-    case 'delivered':
-      subject = `Order Delivered #${order._id}`;
-      html = `<div style="${baseStyle}"><h2 style="color: #8B5A2B;">Your order has been delivered!</h2><p>We hope you love your purchase. Please consider leaving a review.</p><a href="${orderLink}" style="background: #8B5A2B; color: white; padding: 8px 16px; text-decoration: none; border-radius: 4px;">Rate your experience</a></div>`;
-      break;
-    case 'cancelled':
-      subject = `Order Cancelled #${order._id}`;
-      html = `<div style="${baseStyle}"><h2 style="color: #8B5A2B;">Order Cancelled</h2><p>Your order has been cancelled. If you did not request this, please contact support.</p><a href="${orderLink}" style="background: #8B5A2B; color: white; padding: 8px 16px; text-decoration: none; border-radius: 4px;">View Order</a></div>`;
-      break;
-    default:
-      return;
-  }
-
-  if (subject && html) {
-    try {
-      await sendEmail({ email: userEmail, subject, html });
-      console.log(`Status email sent for order ${order._id} → ${newStatus}`);
-    } catch (err) {
-      console.error(`Email send failed for order ${order._id}:`, err);
-    }
-  }
+const formatPaymentMethod = (method) => {
+  if (method === 'cod') return 'Cash on Delivery';
+  if (method === 'bank') return 'Bank Transfer';
+  if (method === 'bank-transfer') return 'Bank Transfer';
+  return method || 'Cash on Delivery';
 };
 
+const buildOrderLink = (order) => {
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+
+  if (order.user) {
+    return `${frontendUrl}/order/${order._id}`;
+  }
+
+  return `${frontendUrl}/guest-order/${order._id}/${order.guestAccessToken}`;
+};
+
+const buildButton = (href, label, secondary = false) => `
+  <a href="${href}" style="
+    display:inline-block;
+    background:${secondary ? '#ffffff' : '#8B5A2B'};
+    color:${secondary ? '#8B5A2B' : '#ffffff'};
+    border:1px solid #8B5A2B;
+    padding:12px 18px;
+    border-radius:8px;
+    text-decoration:none;
+    font-weight:700;
+    margin:6px 4px;
+  ">${label}</a>
+`;
+
+const buildOrderItemsHtml = (order) => `
+  <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin-top:16px;">
+    ${order.orderItems.map(item => `
+      <tr>
+        <td style="padding:12px 0;border-bottom:1px solid #eee;">
+          <strong>${item.name}</strong><br/>
+          <span style="color:#777;font-size:13px;">Qty: ${item.quantity} x Rs. ${Number(item.price).toFixed(2)}</span>
+        </td>
+        <td align="right" style="padding:12px 0;border-bottom:1px solid #eee;">
+          Rs. ${(Number(item.price) * Number(item.quantity)).toFixed(2)}
+        </td>
+      </tr>
+    `).join('')}
+  </table>
+`;
+
+const buildEmailLayout = ({ title, intro, order, buttons, note }) => `
+  <div style="margin:0;padding:0;background:#f7f3ef;font-family:Arial,sans-serif;color:#2f2a25;">
+    <div style="max-width:680px;margin:0 auto;padding:28px 14px;">
+      <div style="background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #eadfd5;">
+        <div style="background:#8B5A2B;color:#ffffff;padding:26px 28px;">
+          <h1 style="margin:0;font-size:24px;">Gentle Stitch Crochet</h1>
+          <p style="margin:6px 0 0;font-size:14px;opacity:.9;">Handmade with care</p>
+        </div>
+
+        <div style="padding:28px;">
+          <h2 style="margin:0 0 10px;color:#8B5A2B;font-size:22px;">${title}</h2>
+          <p style="margin:0 0 18px;color:#5f564f;line-height:1.6;">${intro}</p>
+
+          <div style="background:#fbf8f5;border:1px solid #eadfd5;border-radius:12px;padding:16px;margin:18px 0;">
+            <p style="margin:0 0 8px;"><strong>Order:</strong> #${order._id}</p>
+            <p style="margin:0 0 8px;"><strong>Payment:</strong> ${formatPaymentMethod(order.paymentMethod)}</p>
+            <p style="margin:0;"><strong>Total:</strong> Rs. ${Number(order.totalPrice).toFixed(2)}</p>
+          </div>
+
+          ${buildOrderItemsHtml(order)}
+
+          <div style="background:#fbf8f5;border:1px solid #eadfd5;border-radius:12px;padding:16px;margin:18px 0;">
+            <p style="margin:0;font-weight:700;">Shipping Information</p>
+            <p style="margin:8px 0 0;color:#5f564f;line-height:1.5;">
+              ${order.shippingAddress?.fullName || ''}<br/>
+              ${order.shippingAddress?.street || ''}, ${order.shippingAddress?.city || ''}<br/>
+              ${order.shippingAddress?.state || ''} ${order.shippingAddress?.zipCode || ''}<br/>
+              ${order.shippingAddress?.country || ''}<br/>
+              Phone: ${order.shippingAddress?.phone || ''}
+            </p>
+          </div>
+
+          <div style="text-align:center;margin-top:24px;">
+            ${buttons}
+          </div>
+
+          ${note ? `<p style="font-size:13px;color:#7a7068;line-height:1.5;margin-top:20px;">${note}</p>` : ''}
+        </div>
+      </div>
+    </div>
+  </div>
+`;
+
+const sendOrderStatusEmail = async (order, oldStatus, newStatus) => {
+  let populatedOrder = order;
+
+  if (order.user && !order.user.email) {
+    populatedOrder = await Order.findById(order._id)
+      .select('+guestAccessToken')
+      .populate('user', 'name email');
+  } else if (!order.guestAccessToken) {
+    populatedOrder = await Order.findById(order._id)
+      .select('+guestAccessToken')
+      .populate('user', 'name email');
+  }
+
+  const email = populatedOrder.user?.email || populatedOrder.guestEmail;
+  if (!email) return;
+
+  const orderLink = buildOrderLink(populatedOrder);
+
+  if (newStatus === 'shipped') {
+    return;
+  }
+
+  let subject;
+  let html;
+
+  if (newStatus === 'pending') {
+    subject = `Order Confirmation #${populatedOrder._id}`;
+    html = buildEmailLayout({
+      title: 'Thank you for your order',
+      intro: 'Your order has been received and is currently pending. We will notify you when it is accepted and being prepared.',
+      order: populatedOrder,
+      buttons: buildButton(orderLink, 'View Order Details'),
+    });
+  }
+
+  if (newStatus === 'processing') {
+    subject = `Your order has been accepted #${populatedOrder._id}`;
+    html = buildEmailLayout({
+      title: 'Your order is being prepared',
+      intro: 'Good news! Your order has been accepted and our team is preparing your handmade items.',
+      order: populatedOrder,
+      buttons: buildButton(orderLink, 'View Order Details'),
+    });
+  }
+
+  if (newStatus === 'delivered') {
+    subject = `Order Delivered #${populatedOrder._id}`;
+    const reviewLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/order/${populatedOrder._id}/review`;
+
+    html = buildEmailLayout({
+      title: 'Your order has been delivered',
+      intro: 'We hope you love your crochet pieces. You can view your order or write a verified purchase review.',
+      order: populatedOrder,
+      buttons: `
+        ${buildButton(orderLink, 'View Order Details')}
+        ${buildButton(reviewLink, 'Write a Review', true)}
+      `,
+      note: 'Guest customers will receive secure product review links for each item in the order.',
+    });
+  }
+
+  if (newStatus === 'cancelled') {
+    subject = `Order Cancelled #${populatedOrder._id}`;
+    html = buildEmailLayout({
+      title: 'Your order was cancelled',
+      intro: 'This order has been cancelled. If you have questions, please contact our support team.',
+      order: populatedOrder,
+      buttons: buildButton(orderLink, 'View Order Details'),
+    });
+  }
+
+  if (!subject || !html) return;
+
+  await sendEmail({ email, subject, html });
+};
 // ---------- Create new order (COD) – supports guests and logged users ----------
 const addOrderItems = async (req, res) => {
   // Optional authentication – sets req.user if token provided
@@ -101,13 +225,13 @@ const addOrderItems = async (req, res) => {
   // Determine user or guest
   const userId = req.user ? req.user._id : null;
   const guestEmail = !req.user ? email : undefined;
-
+const guestAccessToken = !req.user ? crypto.randomBytes(32).toString('hex') : undefined;
   const order = new Order({
     user: userId,
     guestEmail,
     orderItems,
     shippingAddress,
-    paymentMethod: 'cod',
+    paymentMethod: paymentMethod || 'cod',
     itemsPrice,
     taxPrice,
     shippingPrice,
@@ -115,6 +239,7 @@ const addOrderItems = async (req, res) => {
     notes,
     paymentStatus: 'pending',
     orderStatus: 'pending',
+    guestAccessToken,
   });
 
   const createdOrder = await order.save();
@@ -137,6 +262,22 @@ const addOrderItems = async (req, res) => {
   res.status(201).json(createdOrder);
 };
 
+const getGuestOrderByToken = async (req, res) => {
+  const order = await Order.findById(req.params.id).select('+guestAccessToken');
+
+  if (!order) {
+    return res.status(404).json({ message: 'Order not found' });
+  }
+
+  if (!order.guestAccessToken || order.guestAccessToken !== req.params.token) {
+    return res.status(403).json({ message: 'Invalid or expired order link' });
+  }
+
+  res.json(order);
+};
+
+
+
 // ---------- Get order by ID (authenticated) ----------
 const getOrderById = async (req, res) => {
   const order = await Order.findById(req.params.id).populate('user', 'name email');
@@ -155,29 +296,116 @@ const getMyOrders = async (req, res) => {
 
 // ---------- Get all orders (admin) ----------
 const getOrders = async (req, res) => {
-  const orders = await Order.find({}).populate('user', 'name email').sort({ createdAt: -1 });
+  let keyword = req.query.keyword ? req.query.keyword.trim() : '';
+  const orderStatus = req.query.orderStatus ? req.query.orderStatus.trim() : '';
+  const paymentStatus = req.query.paymentStatus ? req.query.paymentStatus.trim() : '';
+  keyword = keyword.replace(/^#+/, '');
+
+  const baseMatch = {};
+  if (orderStatus) baseMatch.orderStatus = orderStatus;
+  if (paymentStatus) baseMatch.paymentStatus = paymentStatus;
+
+  if (!keyword) {
+    const orders = await Order.find(baseMatch).populate('user', 'name email').sort({ createdAt: -1 });
+    return res.json(orders);
+  }
+
+  const escapedKeyword = escapeRegex(keyword);
+  const regex = new RegExp(escapedKeyword, 'i');
+  const searchConditions = [
+    { guestEmail: regex },
+    { 'shippingAddress.fullName': regex },
+    { 'shippingAddress.phone': regex },
+    { orderStatus: regex },
+    { paymentStatus: regex },
+    { trackingNumber: regex },
+  ];
+
+  if (mongoose.Types.ObjectId.isValid(keyword)) {
+    searchConditions.unshift({ _id: mongoose.Types.ObjectId(keyword) });
+  }
+
+  const orders = await Order.aggregate([
+    {
+      $addFields: {
+        orderIdString: { $toString: '$_id' },
+      },
+    },
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'user',
+        foreignField: '_id',
+        as: 'user',
+      },
+    },
+    { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } },
+    {
+      $match: {
+        $and: [
+          baseMatch,
+          {
+            $or: [
+              { orderIdString: regex },
+              ...searchConditions,
+              { 'user.name': regex },
+              { 'user.email': regex },
+            ],
+          },
+        ],
+      },
+    },
+    { $sort: { createdAt: -1 } },
+  ]);
+
   res.json(orders);
 };
 
-// ---------- Update order status (admin) – with email ----------
+// ---------- Update order status (admin) – with email + review tokens ----------
 const updateOrderStatus = async (req, res) => {
-  const { status } = req.body;
-  const { trackingNumber } = req.body;
-  const order = await Order.findById(req.params.id);
+  let { status, trackingNumber } = req.body;
+
+  if (status === 'processed') status = 'processing';
+
+  const allowedStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
+
+  if (!allowedStatuses.includes(status)) {
+    return res.status(400).json({ message: 'Invalid order status' });
+  }
+
+  const order = await Order.findById(req.params.id).select('+guestAccessToken');
   if (!order) return res.status(404).json({ message: 'Order not found' });
 
   const oldStatus = order.orderStatus;
-  if (oldStatus === status) return res.status(400).json({ message: 'Order status is already ' + status });
+  if (oldStatus === status) {
+    return res.status(400).json({ message: 'Order status is already ' + status });
+  }
 
   order.orderStatus = status;
   if (trackingNumber) order.trackingNumber = trackingNumber;
   if (status === 'delivered') order.deliveredAt = Date.now();
+
   await order.save();
 
-  sendOrderStatusEmail(order, oldStatus, status, order.trackingNumber).catch(console.error);
+  sendOrderStatusEmail(order, oldStatus, status).catch(console.error);
+
+  if (status === 'delivered') {
+    try {
+      const tokens = await generateReviewTokensForOrder(order);
+
+      for (const tokenDoc of tokens) {
+        const product = await Product.findById(tokenDoc.product);
+        if (product) {
+          await sendReviewInvitation(order, product, tokenDoc.token);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to generate review tokens:', err);
+    }
+  }
+
   res.json({ message: 'Order status updated', order });
 };
-
 // ---------- Update payment status to paid (admin) ----------
 const updatePaymentStatus = async (req, res) => {
   const order = await Order.findById(req.params.id);
@@ -201,6 +429,12 @@ const updatePaymentStatus = async (req, res) => {
 
   res.json({ message: 'Payment status updated to paid' });
 };
+const deleteOrder = async (req, res) => {
+  const order = await Order.findById(req.params.id);
+  if (!order) return res.status(404).json({ message: 'Order not found' });
+  await order.deleteOne();
+  res.json({ message: 'Order deleted' });
+};
 
 module.exports = {
   addOrderItems,
@@ -209,4 +443,6 @@ module.exports = {
   getOrders,
   updateOrderStatus,
   updatePaymentStatus,
+  deleteOrder,
+  getGuestOrderByToken,
 };

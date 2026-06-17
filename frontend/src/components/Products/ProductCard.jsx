@@ -5,12 +5,22 @@ import { addToWishlist, removeFromWishlist } from '../../redux/slices/wishlistSl
 import { HeartIcon as HeartOutline } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolid } from '@heroicons/react/24/solid';
 import { useCartActions } from '../../hooks/useCart';
+import api from '../../services/api';
 
 const ProductCard = ({ product, showAddToCart = false }) => {
   const dispatch = useDispatch();
+  const { userInfo } = useSelector((state) => state.auth);
   const wishlistItems = useSelector((state) => state.wishlist.items);
-  const isInWishlist = wishlistItems.includes(product._id);
+  const normalizedWishlistItems = Array.isArray(wishlistItems)
+    ? wishlistItems.map((item) => {
+        if (typeof item === 'string') return item;
+        if (item && typeof item === 'object') return item._id || item.id || item.productId;
+        return null;
+      }).filter(Boolean)
+    : [];
+  const isInWishlist = normalizedWishlistItems.includes(product._id);
   const { addToCart } = useCartActions();
+  const isOutOfStock = product.stock <= 0;  // 👈 new line
 
   const images = product.images || [];
   const mainImage = images.find(img => img.isMain) || images[0];
@@ -20,10 +30,18 @@ const ProductCard = ({ product, showAddToCart = false }) => {
   const emptyStars = 5 - fullStars;
   const isOnSale = product.comparePrice && product.comparePrice > product.price;
 
-  const toggleWishlist = () => {
+  const toggleWishlist = async () => {
     if (isInWishlist) {
+      // Remove from wishlist
+      if (userInfo) {
+        await api.delete(`/users/wishlist/${product._id}`);
+      }
       dispatch(removeFromWishlist(product._id));
     } else {
+      // Add to wishlist
+      if (userInfo) {
+        await api.post(`/users/wishlist/${product._id}`);
+      }
       dispatch(addToWishlist(product._id));
     }
   };
@@ -79,12 +97,21 @@ const ProductCard = ({ product, showAddToCart = false }) => {
         </div>
 
         {showAddToCart && (
-          <button
-            onClick={handleAddToCart}
-            className="mt-3 w-full bg-gray-100 text-gray-800 text-sm py-2 rounded-lg hover:bg-primary hover:text-white active:bg-primary/80 active:scale-95 transition-all duration-200 font-medium"
-          >
-            Add to Cart
-          </button>
+          isOutOfStock ? (
+            <button
+              disabled
+              className="mt-3 w-full bg-gray-300 text-gray-500 text-sm py-2 rounded-lg cursor-not-allowed font-medium"
+            >
+              Sold Out
+            </button>
+          ) : (
+            <button
+              onClick={handleAddToCart}
+              className="mt-3 w-full bg-gray-100 text-gray-800 text-sm py-2 rounded-lg hover:bg-primary hover:text-white active:bg-primary/80 active:scale-95 transition-all duration-200 font-medium"
+            >
+              Add to Cart
+            </button>
+          )
         )}
       </div>
     </div>

@@ -129,7 +129,7 @@ const HomePage = () => {
       <section className="container mx-auto px-4 md:px-6 lg:px-8 py-12">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-800">New Arrivals</h2>
-          <button onClick={() => handleViewAll('new')} className="px-4 py-2 border border-primary text-primary rounded-lg hover:bg-primary hover:text-white transition text-sm font-medium">
+          <button onClick={() => handleViewAll('new')} className="px-4 py-2 border border-primary text-primary rounded-lg hover:bg-primary hover:text-white active:bg-primary/80 active:scale-95 transition-all duration-200  text-sm font-medium">
             View All
           </button>
         </div>
@@ -153,7 +153,7 @@ const HomePage = () => {
       <section className="container mx-auto px-4 md:px-6 lg:px-8 py-12 bg-gray-50 rounded-2xl">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-800">Best Sellers</h2>
-          <button onClick={() => handleViewAll('best')} className="px-4 py-2 border border-primary text-primary rounded-lg hover:bg-primary hover:text-white transition text-sm font-medium">
+          <button onClick={() => handleViewAll('best')} className="px-4 py-2 border border-primary text-primary rounded-lg hover:bg-primary hover:text-white active:bg-primary/80 active:scale-95 transition-all duration-200  text-sm font-medium">
             View All
           </button>
         </div>
@@ -177,7 +177,7 @@ const HomePage = () => {
       <section className="container mx-auto px-4 md:px-6 lg:px-8 py-12">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-800">Featured Products</h2>
-          <button onClick={() => handleViewAll('featured')} className="px-4 py-2 border border-primary text-primary rounded-lg hover:bg-primary hover:text-white transition text-sm font-medium">
+          <button onClick={() => handleViewAll('featured')} className="px-4 py-2 border border-primary text-primary rounded-lg hover:bg-primary hover:text-white active:bg-primary/80 active:scale-95 transition-all duration-200  text-sm font-medium">
             View All
           </button>
         </div>

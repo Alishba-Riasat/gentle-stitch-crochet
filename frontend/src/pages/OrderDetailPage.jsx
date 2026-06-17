@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import { ArrowLeftIcon, TruckIcon, CheckCircleIcon, XCircleIcon, ClockIcon } from '@heroicons/react/24/outline';
+import {TruckIcon, CheckCircleIcon, XCircleIcon, ClockIcon } from '@heroicons/react/24/outline';
 
 const OrderDetailPage = () => {
   const { id } = useParams();
@@ -76,9 +76,7 @@ const OrderDetailPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <button onClick={goBack} className="flex items-center gap-1 text-primary hover:underline mb-6">
-        <ArrowLeftIcon className="h-5 w-5" /> Back to Profile
-      </button>
+      
 
       <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
         {/* Header */}

@@ -14,11 +14,25 @@ import {
 import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid';
 import { fetchCategories } from '../../services/categoryService';
 import api from '../../services/api';
+import { useSettings } from '../../hooks/useSettings';
 
 const Header = () => {
+  const { settings, loading: settingsLoading } = useSettings();
   const { totalQuantity } = useSelector((state) => state.cart);
   const { userInfo } = useSelector((state) => state.auth);
-  const wishlistCount = useSelector((state) => state.wishlist?.items?.length || 0);
+  const wishlistCount = useSelector((state) => {
+    const items = state.wishlist?.items;
+    if (!Array.isArray(items)) return 0;
+    return Array.from(new Set(
+      items
+        .map((item) => {
+          if (typeof item === 'string') return item;
+          if (item && typeof item === 'object') return item._id || item.id || item.productId;
+          return null;
+        })
+        .filter(Boolean)
+    )).length;
+  });
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -108,17 +122,23 @@ const Header = () => {
 
   const HeartIcon = wishlistCount > 0 ? HeartSolidIcon : HeartOutlineIcon;
 
+  // Use settings values with fallbacks
+  
+  const storeLogo = settings?.storeLogo || '';
+
   return (
     <>
       <header className="sticky top-0 z-50 bg-white shadow-md">
         <div className="container mx-auto px-4 py-3">
           {/* Desktop layout */}
           <div className="hidden md:flex items-center justify-between gap-4">
-            <Link to="/" className="text-2xl font-bold text-primary tracking-tight">
-              Gentle Stitch Crochet
+            <Link to="/" className="flex items-center gap-2 shrink-0">
+              {storeLogo && (
+                <img src={storeLogo} alt="Logo" className="h-10 w-auto" />
+              )}
+             
             </Link>
 
-            
             {/* Search Bar with Suggestions */}
             <div className="relative flex-1 max-w-md" ref={searchRef}>
               <form onSubmit={handleSearch} className="relative">
@@ -156,37 +176,34 @@ const Header = () => {
                 </div>
               )}
             </div>
-            
-
 
             <div className="flex items-center space-x-4">
               <nav className="flex items-center space-x-4">
                 <NavLink to="/" className={activeLinkClass}>Home</NavLink>
                 <NavLink to="/shop" className={activeLinkClass}>ShopAll</NavLink>
                 {/* Categories Dropdown */}
-            <div className="relative" ref={categoriesRef}>
-              <button
-                onClick={() => setShowCategoriesDropdown(!showCategoriesDropdown)}
-                className="flex items-center gap-1 text-gray-700 hover:text-primary transition"
-              >
-                Categories <ChevronDownIcon className="h-4 w-4" />
-              </button>
-              {showCategoriesDropdown && (
-                <div className="absolute left-0 mt-2 w-56 bg-white rounded-md shadow-lg py-2 z-20 border">
-                  {categories.map((cat) => (
-                    <Link
-                      key={cat._id}
-                      to={`/shop?category=${cat.slug}`}
-                      onClick={() => setShowCategoriesDropdown(false)}
-                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                    >
-                      {cat.name}
-                    </Link>
-                  ))}
+                <div className="relative" ref={categoriesRef}>
+                  <button
+                    onClick={() => setShowCategoriesDropdown(!showCategoriesDropdown)}
+                    className="flex items-center gap-1 text-gray-700 hover:text-primary transition"
+                  >
+                    Categories <ChevronDownIcon className="h-4 w-4" />
+                  </button>
+                  {showCategoriesDropdown && (
+                    <div className="absolute left-0 mt-2 w-56 bg-white rounded-md shadow-lg py-2 z-20 border">
+                      {categories.map((cat) => (
+                        <Link
+                          key={cat._id}
+                          to={`/shop?category=${cat.slug}`}
+                          onClick={() => setShowCategoriesDropdown(false)}
+                          className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                        >
+                          {cat.name}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-
                 <NavLink to="/contact" className={activeLinkClass}>ContactUs</NavLink>
                 <NavLink to="/faq" className={activeLinkClass}>FAQ</NavLink>
                 <NavLink to="/about" className={activeLinkClass}>AboutUs</NavLink>
@@ -207,7 +224,7 @@ const Header = () => {
                   </div>
                 </div>
               ) : (
-                <Link to="/login" className="btn-primary py-2 px-4 active:bg-primary/80 active:scale-95 transition-all duration-200 ">Sign In</Link>
+                <Link to="/login" className="btn-primary py-2 px-4 active:bg-primary/80 active:scale-95 transition-all duration-200">Sign In</Link>
               )}
 
               <Link to="/wishlist" className="relative">
@@ -230,13 +247,16 @@ const Header = () => {
             </div>
           </div>
 
-          {/* Mobile layout (unchanged except for search toggle) */}
+          {/* Mobile layout */}
           <div className="md:hidden flex items-center justify-between">
             <button onClick={() => setMobileMenuOpen(true)} className="text-gray-700">
               <Bars3Icon className="h-6 w-6" />
             </button>
-            <Link to="/" className="text-xl font-bold text-primary tracking-tight">
-              Gentle Stitch
+            <Link to="/" className="flex items-center gap-2">
+              {storeLogo && (
+                <img src={storeLogo} alt="Logo" className="h-8 w-auto" />
+              )}
+              
             </Link>
             <div className="flex items-center gap-3">
               <button onClick={() => setShowMobileSearch(!showMobileSearch)} className="text-gray-700 hover:text-primary">
@@ -285,8 +305,39 @@ const Header = () => {
         )}
       </header>
 
-      {/* Mobile Sidebar (unchanged) */}
-      {/* ... same as before ... */}
+      {/* Mobile Sidebar – unchanged */}
+      <div
+        className={`fixed inset-0 z-50 transition-transform duration-300 ease-in-out ${
+          mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <div className="absolute inset-0 bg-black/50" onClick={() => setMobileMenuOpen(false)}></div>
+        <div className="relative w-80 h-full bg-white shadow-xl flex flex-col">
+          <div className="flex justify-between items-center p-4 border-b">
+            <span className="text-xl font-bold text-primary">Menu</span>
+            <button onClick={() => setMobileMenuOpen(false)}>
+              <XMarkIcon className="h-6 w-6 text-gray-700" />
+            </button>
+          </div>
+          <nav className="flex flex-col p-4 space-y-4">
+            <NavLink to="/" className={({ isActive }) => isActive ? 'text-primary' : 'text-gray-700'} onClick={() => setMobileMenuOpen(false)}>Home</NavLink>
+            <NavLink to="/shop" className={({ isActive }) => isActive ? 'text-primary' : 'text-gray-700'} onClick={() => setMobileMenuOpen(false)}>Shop</NavLink>
+            <NavLink to="/contact" className={({ isActive }) => isActive ? 'text-primary' : 'text-gray-700'} onClick={() => setMobileMenuOpen(false)}>Contact</NavLink>
+            <NavLink to="/faq" className={({ isActive }) => isActive ? 'text-primary' : 'text-gray-700'} onClick={() => setMobileMenuOpen(false)}>FAQ</NavLink>
+            <NavLink to="/about" className={({ isActive }) => isActive ? 'text-primary' : 'text-gray-700'} onClick={() => setMobileMenuOpen(false)}>About</NavLink>
+            {userInfo ? (
+              <>
+                {userInfo.role === 'admin' && (
+                  <Link to="/admin" className="text-gray-700" onClick={() => setMobileMenuOpen(false)}>Admin Panel</Link>
+                )}
+                <button onClick={handleLogout} className="text-left text-gray-700">Logout</button>
+              </>
+            ) : (
+              <Link to="/login" className="text-gray-700" onClick={() => setMobileMenuOpen(false)}>Sign In</Link>
+            )}
+          </nav>
+        </div>
+      </div>
     </>
   );
 };

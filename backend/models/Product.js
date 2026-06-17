@@ -1,10 +1,39 @@
 const mongoose = require('mongoose');
 
 const reviewSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  name: { type: String, required: true }, // user's name at time of review
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+  name: { type: String, required: true },
+  email: { type: String, required: true, lowercase: true },
   rating: { type: Number, required: true, min: 1, max: 5 },
+  title: { type: String, default: '' },
   comment: { type: String, required: true, minlength: 5 },
+ order: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: 'Order',
+},
+media: [
+  {
+    url: { type: String, required: true },
+    publicId: { type: String },
+    resourceType: {
+      type: String,
+      enum: ['image', 'video'],
+      required: true,
+    },
+  },
+],
+isHidden: {
+  type: Boolean,
+  default: false,
+},
+verifiedPurchase: {
+  type: Boolean,
+  default: false,
+},
+isGuest: {
+  type: Boolean,
+  default: false,
+},
   createdAt: { type: Date, default: Date.now },
 });
 
@@ -66,14 +95,26 @@ const productSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // Auto‑generate slug from name
-productSchema.pre('save', function(next) {
+/*productSchema.pre('save', function(next) {
   if (this.isModified('name')) {
     this.slug = this.name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
   }
   next();
 });
+*/
+productSchema.pre('validate', function(next) {
+  if (this.isModified('name') || !this.slug) {
+    this.slug = this.name
+      .toLowerCase()
+      .trim()
+      .replace(/ /g, '-')
+      .replace(/[^\w-]+/g, '');
+  }
 
+  next();
+});
 // Prevent duplicate reviews – ensure a user can review a product only once
+
 productSchema.index({ 'reviews.user': 1, _id: 1 }, { unique: true });
 
 module.exports = mongoose.model('Product', productSchema);

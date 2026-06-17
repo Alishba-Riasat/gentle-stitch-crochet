@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import api from '../services/api';
 import ProductCard from '../components/Products/ProductCard';
@@ -8,28 +8,51 @@ const WishlistPage = () => {
   const wishlistIds = useSelector((state) => state.wishlist.items);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const normalizedWishlistIds = useMemo(() => {
+    if (!Array.isArray(wishlistIds)) return [];
+    return Array.from(new Set(
+      wishlistIds
+        .map((item) => {
+          if (typeof item === 'string') return item;
+          if (item && typeof item === 'object') return item._id || item.id || item.productId;
+          return null;
+        })
+        .filter(Boolean)
+    ));
+  }, [wishlistIds]);
 
   useEffect(() => {
     const fetchWishlistProducts = async () => {
-      if (wishlistIds.length === 0) {
+      if (normalizedWishlistIds.length === 0) {
         setProducts([]);
         setLoading(false);
+        setError(null);
         return;
       }
       setLoading(true);
+      setError(null);
       try {
-        // Fetch each product individually or use a batch endpoint
-        const productPromises = wishlistIds.map(id => api.get(`/products/${id}`));
-        const responses = await Promise.all(productPromises);
-        setProducts(responses.map(res => res.data));
-      } catch (error) {
-        console.error('Failed to fetch wishlist products', error);
+        const productPromises = normalizedWishlistIds.map((id) => api.get(`/products/${id}`));
+        const results = await Promise.allSettled(productPromises);
+        const successfulProducts = results
+          .filter((result) => result.status === 'fulfilled')
+          .map((result) => result.value.data);
+
+        setProducts(successfulProducts);
+        if (successfulProducts.length === 0) {
+          setError('Unable to load wishlist products. Please refresh or try again later.');
+        }
+      } catch (fetchError) {
+        console.error('Failed to fetch wishlist products', fetchError);
+        setError('Unable to load wishlist products. Please try again.');
       } finally {
         setLoading(false);
       }
     };
     fetchWishlistProducts();
-  }, [wishlistIds]);
+  }, [normalizedWishlistIds]);
 
   if (loading) {
     return (
@@ -44,8 +67,10 @@ const WishlistPage = () => {
       <div className="container mx-auto px-4 py-12 text-center">
         <h1 className="text-3xl font-bold text-center mb-4">Your Wishlist</h1>
         <div className="border-t border-gray-200 mb-8"></div>
-        <p className="text-gray-500 mb-6">Your wishlist is empty.</p>
-        <Link to="/shop" className="btn-primary inline-block">Continue Shopping</Link>
+        <p className="text-gray-500 mb-6">
+          {error ? error : 'Your wishlist is empty.'}
+        </p>
+        <Link to="/shop" className="btn-primary inline-block active:bg-primary/80 active:scale-95 transition-all duration-200 ">Continue Shopping</Link>
       </div>
     );
   }
@@ -53,7 +78,7 @@ const WishlistPage = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl md:text-4xl font-bold text-gray-800 text-center mb-6">Your Wishlist</h1>
-      <div className="border-t border-gray-200 mb-12"></div>
+      <div className="border-t border-gray-200 mb-12 mt-12"></div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {products.map(product => (
           <ProductCard key={product._id} product={product} showAddToCart />

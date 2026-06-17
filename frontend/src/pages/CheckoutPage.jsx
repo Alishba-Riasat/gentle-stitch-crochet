@@ -5,12 +5,14 @@ import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
 import { clearCartGuest, clearCartBackend, removeCartItemBackend, removeCartItemGuest } from '../redux/slices/cartSlice';
 import { CheckCircleIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { useSettings } from '../hooks/useSettings';
 
 const CheckoutPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { userInfo } = useSelector((state) => state.auth);
   const { items, totalAmount } = useSelector((state) => state.cart);
+  const { settings } = useSettings();
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [paymentMethod, setPaymentMethod] = useState('cod');
@@ -46,11 +48,17 @@ const CheckoutPage = () => {
     country: 'Pakistan',
   });
 
-  // Shipping logic
-  const FREE_SHIPPING_THRESHOLD = 5000;
-  const STANDARD_SHIPPING_FEE = 199;
+  // Shipping logic – use settings values with fallbacks
+  const FREE_SHIPPING_THRESHOLD = settings?.freeShippingThreshold || 5000;
+  const STANDARD_SHIPPING_FEE = settings?.shippingFee || 199;
   const shippingCost = totalAmount >= FREE_SHIPPING_THRESHOLD ? 0 : STANDARD_SHIPPING_FEE;
   const finalTotal = totalAmount + shippingCost;
+
+  // Payment methods based on settings
+  const paymentMethods = [
+    settings?.codEnabled !== false && { value: 'cod', label: 'Cash on Delivery (COD)', description: 'Pay when you receive your order. No extra charges.' },
+    settings?.bankTransferEnabled !== false && { value: 'bank', label: 'Bank Deposit / Transfer', description: 'Please contact us on WhatsApp or email for bank details.' },
+  ].filter(Boolean);
 
   // Prefill for logged user (shipping)
   useEffect(() => {
@@ -85,6 +93,13 @@ const CheckoutPage = () => {
     }
   }, [useDifferentBilling, shippingData]);
 
+  // Ensure default payment method is available
+  useEffect(() => {
+    if (paymentMethods.length > 0 && !paymentMethods.find(p => p.value === paymentMethod)) {
+      setPaymentMethod(paymentMethods[0].value);
+    }
+  }, [paymentMethods, paymentMethod]);
+
   const handleShippingChange = (e) => {
     setShippingData({ ...shippingData, [e.target.name]: e.target.value });
     if (errors[e.target.name]) setErrors(prev => ({ ...prev, [e.target.name]: '' }));
@@ -97,7 +112,6 @@ const CheckoutPage = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    // Shipping required fields
     if (!shippingData.fullName.trim()) newErrors.fullName = 'Full name is required';
     if (!shippingData.email.trim()) newErrors.email = 'Email is required';
     else if (!/\S+@\S+\.\S+/.test(shippingData.email)) newErrors.email = 'Valid email required';
@@ -110,7 +124,6 @@ const CheckoutPage = () => {
     if (!shippingData.city.trim()) newErrors.city = 'City is required';
     if (!shippingData.country.trim()) newErrors.country = 'Country is required';
 
-    // Billing validation if different
     if (useDifferentBilling) {
       if (!billingData.fullName.trim()) newErrors.billingFullName = 'Billing full name is required';
       if (!billingData.email.trim()) newErrors.billingEmail = 'Billing email is required';
@@ -128,7 +141,7 @@ const CheckoutPage = () => {
     return Object.keys(newErrors).length === 0;
   };
 
- const checkStock = async () => {
+  const checkStock = async () => {
     const outOfStock = [];
     for (const item of items) {
       try {
@@ -150,12 +163,11 @@ const CheckoutPage = () => {
     return outOfStock;
   };
 
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
     setLoading(true);
-     const stockIssues = await checkStock();
+    const stockIssues = await checkStock();
     if (stockIssues.length > 0) {
       setOutOfStockItems(stockIssues);
       setShowStockModal(true);
@@ -206,7 +218,6 @@ const CheckoutPage = () => {
 
     try {
       const response = await api.post('/orders', orderData);
-      // Clear cart
       if (!userInfo) dispatch(clearCartGuest());
       else await dispatch(clearCartBackend()).unwrap();
       setOrderId(response.data._id);
@@ -243,7 +254,6 @@ const CheckoutPage = () => {
   };
 
   if (items.length === 0 && !showSuccessModal) {
-    // Show empty cart message only when not showing modal
     return (
       <div className="container mx-auto px-4 py-16 text-center">
         <h1 className="text-3xl font-bold mb-4">Your Cart is Empty</h1>
@@ -256,10 +266,11 @@ const CheckoutPage = () => {
   // Reusable input styling
   const inputClass = (fieldError) => `w-full px-4 py-2 rounded-lg border ${fieldError ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-primary'} focus:outline-none focus:ring-2 transition`;
 
-  // Payment method info
-  const paymentInfo = {
-    cod: { description: 'Pay when you receive your order. No extra charges.', icon: '💰' },
-    bank: { description: 'Please contact us on WhatsApp or email for bank details.', icon: '🏦' },
+  // Payment method info (dynamic description)
+  const getPaymentDescription = (method) => {
+    if (method === 'cod') return 'Pay when you receive your order. No extra charges.';
+    if (method === 'bank') return `Please contact us on WhatsApp or email for bank details.`;
+    return '';
   };
 
   return (
@@ -333,7 +344,7 @@ const CheckoutPage = () => {
             <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
               <h2 className="text-xl font-semibold mb-4">Billing Address</h2>
               <div className="space-y-4">
-                {/* Billing fields – same structure, omitted for brevity. Include all fields from the billingData state. */}
+                {/* Billing fields – same as shipping */}
                 <div>
                   <label className="block text-gray-700 mb-1">Full Name <span className="text-red-500">*</span></label>
                   <input type="text" name="fullName" value={billingData.fullName} onChange={handleBillingChange} className={inputClass(errors.billingFullName)} />
@@ -382,24 +393,35 @@ const CheckoutPage = () => {
           <div className="bg-white rounded-xl shadow-sm p-6">
             <h2 className="text-xl font-semibold mb-4">Payment Method</h2>
             <div className="space-y-3">
-              <label className="flex items-start gap-3 cursor-pointer p-3 rounded-lg border hover:bg-gray-50 transition">
-                <input type="radio" name="paymentMethod" value="cod" checked={paymentMethod === 'cod'} onChange={(e) => setPaymentMethod(e.target.value)} className="mt-1" />
-                <div>
-                  <p className="font-medium">Cash on Delivery (COD)</p>
-                  <p className="text-sm text-gray-500">{paymentInfo.cod.description}</p>
-                </div>
-              </label>
-              <label className="flex items-start gap-3 cursor-pointer p-3 rounded-lg border hover:bg-gray-50 transition">
-                <input type="radio" name="paymentMethod" value="bank" checked={paymentMethod === 'bank'} onChange={(e) => setPaymentMethod(e.target.value)} className="mt-1" />
-                <div>
-                  <p className="font-medium">Bank Deposit / Transfer</p>
-                  <p className="text-sm text-gray-500">{paymentInfo.bank.description}</p>
-                  <div className="mt-2 text-xs text-primary">
-                    📞 <a href="tel:+923367072502" className="hover:underline">+92 336 7072502</a> &nbsp;|&nbsp;
-                    ✉️ <a href="mailto:care@gentlestitch.com" className="hover:underline">care@gentlestitch.com</a>
+              {paymentMethods.map((method) => (
+                <label
+                  key={method.value}
+                  className="flex items-start gap-3 cursor-pointer p-3 rounded-lg border hover:bg-gray-50 transition"
+                >
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value={method.value}
+                    checked={paymentMethod === method.value}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                    className="mt-1"
+                  />
+                  <div>
+                    <p className="font-medium">{method.label}</p>
+                    <p className="text-sm text-gray-500">{method.description}</p>
+                    {method.value === 'bank' && (
+                      <div className="mt-2 text-xs text-primary">
+                        📞 <a href={`tel:${settings?.storePhone || '+923367072502'}`} className="hover:underline">
+                          {settings?.storePhone || '+92 336 7072502'}
+                        </a> &nbsp;|&nbsp;
+                        ✉️ <a href={`mailto:${settings?.storeEmail || 'care@gentlestitch.com'}`} className="hover:underline">
+                          {settings?.storeEmail || 'care@gentlestitch.com'}
+                        </a>
+                      </div>
+                    )}
                   </div>
-                </div>
-              </label>
+                </label>
+              ))}
             </div>
           </div>
         </div>
@@ -441,7 +463,7 @@ const CheckoutPage = () => {
         </div>
       </div>
 
-        {/* Stock out modal */}
+      {/* Stock out modal */}
       {showStockModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full mx-4">

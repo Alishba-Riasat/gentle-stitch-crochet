@@ -18,6 +18,10 @@ const orderSchema = new mongoose.Schema({
     ref: 'User',
     default: null,
   },
+  guestAccessToken: {
+  type: String,
+  select: false,
+},
   guestEmail: {
     type: String,
     lowercase: true,

@@ -1,4 +1,4 @@
-const User = require('../models/User');
+﻿const User = require('../models/User');
 
 // @desc    Get user profile
 // @route   GET /api/users/profile
@@ -84,18 +84,92 @@ const removeFromWishlist = async (req, res) => {
   res.json({ message: 'Removed from wishlist', wishlist: user.wishlist });
 };
 
+
+
+// @desc    Get user by ID
+// @route   GET /api/admin/users/:id
+// @access  Private/Admin
+const getUserById = async (req, res) => {
+  const user = await User.findById(req.params.id).select('-password');
+  if (user) res.json(user);
+  else res.status(404).json({ message: 'User not found' });
+};
+
 // @desc    Get all users (admin)
-// @route   GET /api/users
+// @route   GET /api/admin/users
 // @access  Private/Admin
 const getUsers = async (req, res) => {
-  const users = await User.find({});
-  res.json(users);
+  try {
+    const search = req.query.search?.trim();
+
+    const query = search
+      ? {
+          $or: [
+            { name: { $regex: search, $options: 'i' } },
+            { email: { $regex: search, $options: 'i' } },
+            { phone: { $regex: search, $options: 'i' } },
+            { role: { $regex: search, $options: 'i' } },
+            { 'address.street': { $regex: search, $options: 'i' } },
+            { 'address.city': { $regex: search, $options: 'i' } },
+            { 'address.state': { $regex: search, $options: 'i' } },
+            { 'address.country': { $regex: search, $options: 'i' } },
+            { 'address.postalCode': { $regex: search, $options: 'i' } },
+          ],
+        }
+      : {};
+
+    const users = await User.find(query).select('-password').sort({ createdAt: -1 });
+
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+// @desc    Delete user
+// @route   DELETE /api/admin/users/:id
+// @access  Private/Admin
+const deleteUser = async (req, res) => {
+  const user = await User.findById(req.params.id);
+  if (!user) return res.status(404).json({ message: 'User not found' });
+  // Prevent deleting self
+  if (user._id.toString() === req.user._id.toString()) {
+    return res.status(400).json({ message: 'Cannot delete your own account' });
+  }
+  await user.deleteOne();
+  res.json({ message: 'User deleted' });
+};
+
+// @desc    Update user role
+// @route   PUT /api/admin/users/:id/role
+// @access  Private/Admin
+const updateUserRole = async (req, res) => {
+  const user = await User.findById(req.params.id);
+  if (!user) return res.status(404).json({ message: 'User not found' });
+  const { role } = req.body;
+  if (!['user', 'admin'].includes(role)) {
+    return res.status(400).json({ message: 'Invalid role' });
+  }
+  // Prevent removing last admin
+  if (user.role === 'admin' && role !== 'admin') {
+    const adminCount = await User.countDocuments({ role: 'admin' });
+    if (adminCount === 1) {
+      return res.status(400).json({ message: 'Cannot remove the only admin' });
+    }
+  }
+  user.role = role;
+  await user.save();
+  res.json({ message: 'Role updated', role: user.role });
 };
 
 module.exports = {
   getUserProfile,
   updateUserProfile,
-  changePassword,     
+  changePassword,
+  getUserById,
+  deleteUser,
+  updateUserRole,
   addToWishlist,
   removeFromWishlist,
   getUsers,

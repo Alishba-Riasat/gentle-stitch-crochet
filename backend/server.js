@@ -43,12 +43,13 @@ const categoryRoutes = require('./routes/categoryRoutes');
 const cartRoutes = require('./routes/cartRoutes');
 const userRoutes = require('./routes/userRoutes');
 const orderRoutes = require('./routes/orderRoutes');
-/*
-
+const adminRoutes = require('./routes/adminRoutes');
+const reviewRoutes = require('./routes/reviewRoutes');
+const settingRoutes = require('./routes/settingRoutes');
 
 
 const uploadRoutes = require('./routes/uploadRoutes');
-*/
+
 
 // Mount routes
 app.use('/api/auth', authRoutes);
@@ -57,12 +58,10 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/orders', orderRoutes);
-/*
-
-
-
+app.use('/api/admin', adminRoutes);
 app.use('/api/upload', uploadRoutes);
-*/
+app.use('/api/reviews', reviewRoutes);
+app.use('/api/settings', settingRoutes);
 
 // Test route
 app.get('/', (req, res) => {
