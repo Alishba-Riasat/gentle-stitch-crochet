@@ -36,7 +36,7 @@ const EmailVerificationPage = () => {
   }, [token, navigate]);
 
   return (
-    <div className="container mx-auto px-4 py-12 max-w-md text-center">
+    <div className="container mx-auto px-4 md:px-6 lg:px-12 py-12 max-w-md text-center">
       {!error && (
         <div className="bg-blue-100 text-blue-700 p-4 rounded-lg">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-700 mx-auto mb-2"></div>

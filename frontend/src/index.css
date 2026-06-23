@@ -10,7 +10,18 @@
   .btn-primary {
     @apply bg-primary text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition duration-300;
   }
+
+  .page-section {
+    @apply container mx-auto px-4 md:px-6 lg:px-12 py-12;
+  }
 }
+
+@layer base {
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Playfair Display', Georgia, serif;
+  }
+}
+
 /* Smooth scrolling */
 html {
   scroll-behavior: smooth;

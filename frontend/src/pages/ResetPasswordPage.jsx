@@ -51,7 +51,7 @@ const ResetPasswordPage = () => {
 
   if (!token && serverError) {
     return (
-      <div className="container mx-auto px-4 py-12 max-w-md text-center">
+      <div className="container mx-auto px-4 md:px-6 lg:px-12 py-12 max-w-md text-center">
         <div className="bg-red-100 border border-red-400 text-red-700 p-4 rounded-lg">
           <p>{serverError}</p>
           <Link to="/forgot-password" className="text-primary underline mt-4 inline-block">
@@ -63,8 +63,8 @@ const ResetPasswordPage = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-12 max-w-md">
-      <h1 className="text-3xl font-bold text-center mb-8">Reset Password</h1>
+    <div className="container mx-auto px-4 md:px-6 lg:px-12 py-12 max-w-md">
+      <h1 className="text-3xl font-bold text-center mb-8" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Reset Password</h1>
 
       {/* Server error (red box) above the form */}
       {serverError && (

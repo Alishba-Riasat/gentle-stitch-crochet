@@ -34,14 +34,14 @@ const OrderSuccessPage = () => {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-12 text-center">
+      <div className="container mx-auto px-4 md:px-6 lg:px-12 py-12 text-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
       </div>
     );
   }
   if (!order) {
     return (
-      <div className="container mx-auto px-4 py-12 text-center">
+      <div className="container mx-auto px-4 md:px-6 lg:px-12 py-12 text-center">
         <p className="text-red-600">Order not found.</p>
         <Link to="/shop" className="text-primary mt-4 inline-block hover:underline">← Back to Shop</Link>
       </div>
@@ -62,12 +62,12 @@ const OrderSuccessPage = () => {
   });
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-5xl">
+    <div className="container mx-auto px-4 md:px-6 lg:px-10 py-8 max-w-5xl">
       <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
         {/* Header with brand gradient */}
         <div className="bg-gradient-to-r from-primary to-secondary px-6 py-8 text-white text-center">
           <CheckCircleIcon className="h-16 w-16 mx-auto mb-3" />
-          <h1 className="text-3xl md:text-4xl font-bold">Order Placed!</h1>
+          <h1 className="text-3xl md:text-4xl font-bold" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Order Placed!</h1>
           <p className="text-white/90 mt-2">Your order has been received and is pending confirmation.</p>
         </div>
 
@@ -92,7 +92,7 @@ const OrderSuccessPage = () => {
 
           {/* Order Items */}
           <div>
-            <h2 className="text-xl font-semibold text-gray-800 mb-3 flex items-center gap-2">
+            <h2 className="text-xl font-semibold text-gray-800 mb-3 flex items-center gap-2" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
               <ShoppingBagIcon className="h-5 w-5 text-primary" /> Order Items
             </h2>
             <div className="border rounded-lg overflow-hidden">

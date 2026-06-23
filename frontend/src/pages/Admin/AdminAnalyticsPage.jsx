@@ -55,11 +55,11 @@ const AdminAnalyticsPage = () => {
 
   return (
     <AdminLayout>
-      <h1 className="text-2xl font-bold mb-6">Analytics</h1>
+      <h1 className="text-2xl font-bold mb-6" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Analytics</h1>
 
       {/* Revenue Chart */}
       <div className="bg-white p-4 rounded-lg shadow mb-8">
-        <h2 className="text-lg font-semibold mb-4">Daily Revenue (Last 30 Days)</h2>
+        <h2 className="text-lg font-semibold mb-4" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Daily Revenue (Last 30 Days)</h2>
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={revenueData}>
             <XAxis dataKey="_id" />
@@ -74,7 +74,7 @@ const AdminAnalyticsPage = () => {
 
       {/* Orders by Status */}
       <div className="bg-white p-4 rounded-lg shadow mb-8">
-        <h2 className="text-lg font-semibold mb-4">Orders by Status</h2>
+        <h2 className="text-lg font-semibold mb-4" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Orders by Status</h2>
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={orderStatus}>
             <XAxis dataKey="_id" />
@@ -89,7 +89,7 @@ const AdminAnalyticsPage = () => {
       {/* Review Analytics (only if data exists) */}
       {reviewStats && (
         <div className="bg-white p-4 rounded-lg shadow">
-          <h2 className="text-lg font-semibold mb-4">Review Analytics</h2>
+          <h2 className="text-lg font-semibold mb-4" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Review Analytics</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-primary/5 p-3 rounded-lg">
               <p className="text-sm text-gray-500">Total Reviews</p>

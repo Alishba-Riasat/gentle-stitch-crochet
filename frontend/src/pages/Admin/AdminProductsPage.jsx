@@ -95,7 +95,7 @@ const AdminProductsPage = () => {
   return (
     <AdminLayout>
       <div className="flex flex-wrap justify-between items-center mb-6 gap-4">
-        <h1 className="text-2xl font-bold">Products</h1>
+        <h1 className="text-2xl font-bold" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Products</h1>
         <div className="flex items-center gap-3 flex-wrap">
           <form onSubmit={handleSearch} className="flex items-center gap-2 flex-wrap">
             <div className="relative">

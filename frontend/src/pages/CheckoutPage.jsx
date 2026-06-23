@@ -255,7 +255,7 @@ const CheckoutPage = () => {
 
   if (items.length === 0 && !showSuccessModal) {
     return (
-      <div className="container mx-auto px-4 py-16 text-center">
+      <div className="container mx-auto px-4 md:px-6 lg:px-10 py-16 text-center">
         <h1 className="text-3xl font-bold mb-4">Your Cart is Empty</h1>
         <p className="text-gray-500 mb-8">Looks like you haven't added anything yet.</p>
         <Link to="/shop" className="btn-primary inline-block active:bg-primary/80 active:scale-95 transition-all duration-200">Continue Shopping</Link>
@@ -274,15 +274,15 @@ const CheckoutPage = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
-      <h1 className="text-3xl font-bold text-center mb-8">Checkout</h1>
+    <div className="container mx-auto px-4 md:px-6 lg:px-12 py-12 max-w-7xl">
+      <h1 className="text-3xl font-bold text-center mb-8" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Checkout</h1>
       <div className="border-t border-gray-200 mb-8"></div>
 
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Left: Forms */}
         <div className="lg:w-2/3">
           <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
-            <h2 className="text-xl font-semibold mb-4">Shipping Address</h2>
+            <h2 className="text-xl font-semibold mb-4" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Shipping Address</h2>
             {errors.form && <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-lg">{errors.form}</div>}
             <form className="space-y-4">
               <div>
@@ -342,7 +342,7 @@ const CheckoutPage = () => {
 
           {useDifferentBilling && (
             <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
-              <h2 className="text-xl font-semibold mb-4">Billing Address</h2>
+              <h2 className="text-xl font-semibold mb-4" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Billing Address</h2>
               <div className="space-y-4">
                 {/* Billing fields – same as shipping */}
                 <div>
@@ -391,7 +391,7 @@ const CheckoutPage = () => {
 
           {/* Payment Method */}
           <div className="bg-white rounded-xl shadow-sm p-6">
-            <h2 className="text-xl font-semibold mb-4">Payment Method</h2>
+            <h2 className="text-xl font-semibold mb-4" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Payment Method</h2>
             <div className="space-y-3">
               {paymentMethods.map((method) => (
                 <label
@@ -429,7 +429,7 @@ const CheckoutPage = () => {
         {/* Right: Order Summary */}
         <div className="lg:w-1/3">
           <div className="bg-white rounded-xl shadow-sm p-6 sticky top-24">
-            <h2 className="text-xl font-bold mb-4">Order Summary</h2>
+            <h2 className="text-xl font-bold mb-4" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Order Summary</h2>
             <div className="divide-y">
               {items.map((item) => (
                 <div key={item.productId} className="flex gap-3 py-3">

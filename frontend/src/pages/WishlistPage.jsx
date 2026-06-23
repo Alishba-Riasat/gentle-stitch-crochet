@@ -56,7 +56,7 @@ const WishlistPage = () => {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-12 text-center">
+      <div className="container mx-auto px-4 md:px-6 lg:px-12 py-12 text-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
       </div>
     );
@@ -64,8 +64,8 @@ const WishlistPage = () => {
 
   if (products.length === 0) {
     return (
-      <div className="container mx-auto px-4 py-12 text-center">
-        <h1 className="text-3xl font-bold text-center mb-4">Your Wishlist</h1>
+      <div className="container mx-auto px-4 md:px-6 lg:px-12 py-12 text-center">
+        <h1 className="text-3xl font-bold text-center mb-4" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Your Wishlist</h1>
         <div className="border-t border-gray-200 mb-8"></div>
         <p className="text-gray-500 mb-6">
           {error ? error : 'Your wishlist is empty.'}
@@ -76,8 +76,8 @@ const WishlistPage = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl md:text-4xl font-bold text-gray-800 text-center mb-6">Your Wishlist</h1>
+    <div className="container mx-auto px-4 md:px-6 lg:px-10 py-12">
+      <h1 className="text-3xl md:text-4xl font-bold text-gray-800 text-center mb-6" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Your Wishlist</h1>
       <div className="border-t border-gray-200 mb-12 mt-12"></div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {products.map(product => (

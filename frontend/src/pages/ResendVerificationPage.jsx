@@ -30,8 +30,8 @@ const ResendVerificationPage = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-12 max-w-md">
-      <h1 className="text-3xl font-bold text-center mb-8">Resend Verification Email</h1>
+    <div className="container mx-auto px-4 md:px-6 lg:px-12 py-12 max-w-md">
+      <h1 className="text-3xl font-bold text-center mb-8" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Resend Verification Email</h1>
 
       {successMsg && (
         <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded-lg text-center">

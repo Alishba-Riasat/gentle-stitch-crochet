@@ -47,7 +47,7 @@ const AdminCategoriesPage = () => {
   return (
     <AdminLayout>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Categories</h1>
+        <h1 className="text-2xl font-bold" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Categories</h1>
         <button
           onClick={() => { setEditingCategory(null); setModalOpen(true); }}
           className="btn-primary flex items-center gap-2 active:scale-95 transition-all duration-200"
@@ -114,7 +114,7 @@ const AdminCategoriesPage = () => {
                 <ExclamationTriangleIcon className="h-8 w-8" />
               </div>
               <div className="mt-5 text-center">
-                <h3 className="text-xl font-bold text-gray-900">Delete category</h3>
+                <h3 className="text-xl font-bold text-gray-900" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Delete category</h3>
                 <p className="mt-2 text-sm leading-6 text-gray-600">
                   Are you sure you want to delete <span className="font-semibold text-gray-800">“{deleteModal.category?.name}”</span>?<br />
                   This action cannot be undone.

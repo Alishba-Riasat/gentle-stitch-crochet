@@ -4,7 +4,7 @@ import api from '../services/api';
 import {TruckIcon, CheckCircleIcon, XCircleIcon, ClockIcon } from '@heroicons/react/24/outline';
 
 const OrderDetailPage = () => {
-  const { id } = useParams();
+  const { id, token } = useParams();
   const navigate = useNavigate();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -13,7 +13,9 @@ const OrderDetailPage = () => {
   useEffect(() => {
     const fetchOrder = async () => {
       try {
-        const res = await api.get(`/orders/${id}`);
+        const res = token
+  ? await api.get(`/orders/${id}/guest/${token}`)
+  : await api.get(`/orders/${id}`);
         setOrder(res.data);
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to load order details');
@@ -43,8 +45,9 @@ const OrderDetailPage = () => {
   };
 
   const goBack = () => {
-    navigate('/profile?tab=orders');
-  };
+  if (token) navigate('/');
+  else navigate('/profile?tab=orders');
+};
 
   // Timeline steps
   const steps = [
@@ -59,7 +62,7 @@ const OrderDetailPage = () => {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-12 text-center">
+      <div className="container mx-auto px-4 md:px-6 lg:px-12 py-12 text-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
       </div>
     );
@@ -67,7 +70,7 @@ const OrderDetailPage = () => {
 
   if (error || !order) {
     return (
-      <div className="container mx-auto px-4 py-12 text-center">
+      <div className="container mx-auto px-4 md:px-6 lg:px-12 py-12 text-center">
         <p className="text-red-600">{error || 'Order not found'}</p>
         <button onClick={goBack} className="mt-4 text-primary hover:underline">← Back to Profile</button>
       </div>
@@ -81,7 +84,7 @@ const OrderDetailPage = () => {
       <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-primary to-secondary px-6 py-4 text-white">
-          <h1 className="text-2xl font-bold">Order Details</h1>
+          <h1 className="text-2xl font-bold" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Order Details</h1>
           <p className="text-sm opacity-90">Order #{order._id}</p>
         </div>
 
@@ -99,7 +102,7 @@ const OrderDetailPage = () => {
 
           {/* Tracking Timeline */}
           <div className="mt-6 mb-8">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">Order Progress</h2>
+            <h2 className="text-lg font-semibold text-gray-800 mb-4" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Order Progress</h2>
             <div className="relative">
               {/* Horizontal line */}
               <div className="absolute left-0 right-0 top-5 h-0.5 bg-gray-200 z-0"></div>

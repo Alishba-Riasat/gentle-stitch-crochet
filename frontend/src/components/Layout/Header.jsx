@@ -129,12 +129,12 @@ const Header = () => {
   return (
     <>
       <header className="sticky top-0 z-50 bg-white shadow-md">
-        <div className="container mx-auto px-4 py-3">
+        <div className="container mx-auto px-4 py-4">
           {/* Desktop layout */}
           <div className="hidden md:flex items-center justify-between gap-4">
             <Link to="/" className="flex items-center gap-2 shrink-0">
               {storeLogo && (
-                <img src={storeLogo} alt="Logo" className="h-10 w-auto" />
+                <img src={storeLogo} alt="Logo" className="h-14 w-auto" />
               )}
              
             </Link>
@@ -254,7 +254,7 @@ const Header = () => {
             </button>
             <Link to="/" className="flex items-center gap-2">
               {storeLogo && (
-                <img src={storeLogo} alt="Logo" className="h-8 w-auto" />
+                <img src={storeLogo} alt="Logo" className="h-10 w-auto" />
               )}
               
             </Link>

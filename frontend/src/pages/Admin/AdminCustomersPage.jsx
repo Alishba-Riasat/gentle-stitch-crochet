@@ -71,7 +71,7 @@ const AdminCustomersPage = () => {
   return (
     <AdminLayout>
       <div className="flex flex-wrap justify-between items-center mb-6 gap-4">
-        <h1 className="text-2xl font-bold">Customers</h1>
+        <h1 className="text-2xl font-bold" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Customers</h1>
         <div className="flex items-center gap-3 flex-wrap">
           <form onSubmit={handleSearch} className="flex items-center gap-2">
             <div className="relative">
@@ -177,7 +177,7 @@ const AdminCustomersPage = () => {
                 <ExclamationTriangleIcon className="h-8 w-8" />
               </div>
               <div className="mt-5 text-center">
-                <h3 className="text-xl font-bold text-gray-900">Delete user</h3>
+                <h3 className="text-xl font-bold text-gray-900" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Delete user</h3>
                 <p className="mt-2 text-sm leading-6 text-gray-600">
                   Are you sure you want to delete <span className="font-semibold text-gray-800">“{deleteModal.user?.name}”</span>?<br />
                   This action cannot be undone.

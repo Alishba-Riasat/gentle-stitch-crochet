@@ -105,7 +105,7 @@ const AdminProfilePage = () => {
     <AdminLayout>
       {notification && <CenteredNotification {...notification} onClose={() => setNotification(null)} />}
       <div className="max-w-3xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6">Admin Profile</h1>
+        <h1 className="text-2xl font-bold mb-6" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Admin Profile</h1>
 
         {/* Profile Info */}
         <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
@@ -156,7 +156,7 @@ const AdminProfilePage = () => {
 
         {/* Change Password */}
         <div className="bg-white rounded-xl shadow-sm p-6">
-          <h2 className="text-xl font-semibold mb-4">Change Password</h2>
+          <h2 className="text-xl font-semibold mb-4" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Change Password</h2>
           <div className="space-y-4">
             {/* Current Password */}
             <div>

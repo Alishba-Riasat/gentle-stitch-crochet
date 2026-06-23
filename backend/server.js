@@ -21,7 +21,7 @@ app.use(helmet());
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 10 * 60 * 1000, // 10 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  max: 100,
 });
 app.use('/api', limiter);
 
@@ -46,10 +46,10 @@ const orderRoutes = require('./routes/orderRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
 const settingRoutes = require('./routes/settingRoutes');
-
-
 const uploadRoutes = require('./routes/uploadRoutes');
 
+// Import the guest review controller
+const { getGuestOrderForReview } = require('./controllers/orderController');
 
 // Mount routes
 app.use('/api/auth', authRoutes);
@@ -62,6 +62,9 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/settings', settingRoutes);
+
+// ✅ Guest review route – must be before error handler
+app.get('/api/guest-order-review/:token', getGuestOrderForReview);
 
 // Test route
 app.get('/', (req, res) => {

@@ -41,9 +41,9 @@ const ForgotPasswordPage = () => {
 
   if (submitted) {
     return (
-      <div className="container mx-auto px-4 py-12 max-w-md text-center">
+      <div className="container mx-auto px-4 md:px-6 lg:px-12 py-12 max-w-md text-center">
         <div className="bg-green-100 text-green-700 p-4 rounded-lg">
-          <h2 className="text-2xl font-bold mb-2">Check your inbox</h2>
+          <h2 className="text-2xl font-bold mb-2" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Check your inbox</h2>
           <p>{successMsg}</p>
           <Link to="/login" className="text-primary mt-4 inline-block">Back to Login</Link>
         </div>
@@ -52,8 +52,8 @@ const ForgotPasswordPage = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-12 max-w-md">
-      <h1 className="text-3xl font-bold text-center mb-8">Reset Password</h1>
+    <div className="container mx-auto px-4 md:px-6 lg:px-12 py-12 max-w-md">
+      <h1 className="text-3xl font-bold text-center mb-8" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Reset Password</h1>
       <p className="text-gray-600 text-center mb-6">
         Enter your email address and we'll send you a link to reset your password.
       </p>

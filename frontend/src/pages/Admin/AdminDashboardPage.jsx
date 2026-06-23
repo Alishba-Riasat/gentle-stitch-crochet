@@ -51,7 +51,7 @@ const AdminDashboardPage = () => {
 
   return (
     <AdminLayout>
-      <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
+      <h1 className="text-2xl font-bold mb-6" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Dashboard</h1>
 
       {/* Sales Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

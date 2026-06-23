@@ -98,7 +98,7 @@ const AdminOrdersPage = () => {
     <AdminLayout>
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Orders</h1>
+          <h1 className="text-2xl font-bold" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Orders</h1>
           {(searchQuery || statusFilter || paymentFilter) && (
             <p className="mt-2 text-sm text-gray-500">
               Showing results for{' '}

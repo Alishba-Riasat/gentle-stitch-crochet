@@ -93,7 +93,7 @@ const ShopPage = () => {
   ) : null;
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
+    <div className="container mx-auto px-4 md:px-6 lg:px-10 py-12 max-w-7xl">
       {/* Title row with back arrow (only for categories) */}
       <div className="relative flex items-center justify-center mb-4">
         {categorySlug && !isNew && !isBestSeller && !isFeatured && (
@@ -105,7 +105,7 @@ const ShopPage = () => {
             <ArrowLeftIcon className="h-5 w-5 text-gray-600" />
           </button>
         )}
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-800 text-center">{getPageTitle()}</h1>
+        <h1 className="text-3xl md:text-4xl font-bold text-gray-800 text-center" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>{getPageTitle()}</h1>
       </div>
 
       <div className="border-t border-gray-200 mb-6 mt-8"></div>

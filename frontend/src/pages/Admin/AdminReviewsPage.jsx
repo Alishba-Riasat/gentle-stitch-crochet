@@ -95,7 +95,7 @@ const AdminReviewsPage = () => {
   return (
     <AdminLayout>
       <div className="flex flex-wrap justify-between items-center mb-6 gap-4">
-        <h1 className="text-2xl font-bold">Reviews</h1>
+        <h1 className="text-2xl font-bold" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Reviews</h1>
         <div className="flex flex-wrap gap-3">
           {/* Search */}
           <div className="flex items-center gap-2">

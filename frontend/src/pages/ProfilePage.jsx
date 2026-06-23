@@ -258,7 +258,7 @@ const validateProfile = () => {
   const inputClassName = (hasError) => `w-full px-4 py-2 rounded-lg border ${hasError ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-primary'} focus:outline-none focus:ring-2 transition`;
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
+    <div className="container mx-auto px-4 md:px-6 lg:px-10 py-12 max-w-7xl">
       {notification && <Notification {...notification} onClose={() => setNotification(null)} />}
 
       <div className="flex flex-col lg:flex-row gap-8">
@@ -286,7 +286,7 @@ const validateProfile = () => {
                 </div>
               </div>
               <div className="text-center mt-4">
-                <h2 className="text-xl font-bold text-gray-800">{profile.name || userInfo?.name}</h2>
+                <h2 className="text-xl font-bold text-gray-800" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>{profile.name || userInfo?.name}</h2>
                 <p className="text-gray-500">{profile.email || userInfo?.email}</p>
                 {profile.phone && <p className="text-gray-500 text-sm mt-1">{profile.phone}</p>}
                 <p className="text-xs text-gray-400 mt-2">Member since {profile.createdAt ? new Date(profile.createdAt).getFullYear() : '2024'}</p>
@@ -305,7 +305,7 @@ const validateProfile = () => {
           {activeTab === 'profile' && (
             <div className="bg-white rounded-2xl shadow-lg p-6">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-semibold text-gray-800">Profile Information</h3>
+                <h3 className="text-xl font-semibold text-gray-800" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Profile Information</h3>
                 {!isEditing && <button onClick={() => setIsEditing(true)} className="flex items-center gap-1 text-primary hover:underline"><PencilIcon className="h-4 w-4" /> Edit</button>}
               </div>
               <div className="border-t border-gray-200 mb-6"></div>
@@ -374,7 +374,7 @@ const validateProfile = () => {
          
           {activeTab === 'orders' && (
             <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h3 className="text-xl font-semibold text-gray-800 mb-4">Order History</h3>
+              <h3 className="text-xl font-semibold text-gray-800 mb-4" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Order History</h3>
               <div className="border-t border-gray-200 mb-6"></div>
               {ordersLoading ? (
                 <div className="flex justify-center py-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>
@@ -402,7 +402,7 @@ const validateProfile = () => {
           {/* PASSWORD TAB (unchanged, with red border on error) */}
           {activeTab === 'password' && (
             <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h3 className="text-xl font-semibold text-gray-800 mb-4">Change Password</h3>
+              <h3 className="text-xl font-semibold text-gray-800 mb-4" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Change Password</h3>
               <div className="border-t border-gray-200 mb-6"></div>
               <div className="space-y-4">
                 <div>

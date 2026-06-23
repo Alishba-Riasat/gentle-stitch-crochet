@@ -37,11 +37,9 @@ const formatPaymentMethod = (method) => {
 
 const buildOrderLink = (order) => {
   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-
   if (order.user) {
     return `${frontendUrl}/order/${order._id}`;
   }
-
   return `${frontendUrl}/guest-order/${order._id}/${order.guestAccessToken}`;
 };
 
@@ -61,30 +59,55 @@ const buildButton = (href, label, secondary = false) => `
 
 const buildOrderItemsHtml = (order) => `
   <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin-top:16px;">
+    <thead>
+      <tr>
+        <th align="left" style="padding:8px 0;font-size:12px;color:#777;border-bottom:1px solid #ddd;">Item</th>
+        <th align="right" style="padding:8px 0;font-size:12px;color:#777;border-bottom:1px solid #ddd;">Total</th>
+      </tr>
+    </thead>
+    <tbody>
     ${order.orderItems.map(item => `
       <tr>
-        <td style="padding:12px 0;border-bottom:1px solid #eee;">
-          <strong>${item.name}</strong><br/>
-          <span style="color:#777;font-size:13px;">Qty: ${item.quantity} x Rs. ${Number(item.price).toFixed(2)}</span>
+        <td style="padding:12px 0;border-bottom:1px solid #eee;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+          ${item.image ? `<img src="${item.image}" alt="${item.name}" style="width:50px;height:50px;object-fit:cover;border-radius:4px;flex-shrink:0;margin-right:8px;" />` : ''}
+          <div style="flex:1;min-width:120px;">
+            <strong>${item.name}</strong><br/>
+            <span style="color:#777;font-size:13px;">Qty: ${item.quantity} x Rs. ${Number(item.price).toFixed(2)}</span>
+          </div>
         </td>
-        <td align="right" style="padding:12px 0;border-bottom:1px solid #eee;">
+        <td align="right" style="padding:12px 0;border-bottom:1px solid #eee;white-space:nowrap;">
           Rs. ${(Number(item.price) * Number(item.quantity)).toFixed(2)}
         </td>
       </tr>
     `).join('')}
+    </tbody>
   </table>
 `;
 
 const buildEmailLayout = ({ title, intro, order, buttons, note }) => `
-  <div style="margin:0;padding:0;background:#f7f3ef;font-family:Arial,sans-serif;color:#2f2a25;">
-    <div style="max-width:680px;margin:0 auto;padding:28px 14px;">
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+      @media only screen and (max-width: 600px) {
+        .container { padding: 12px 8px !important; }
+        .inner-content { padding: 20px 16px !important; }
+        .header { padding: 20px 16px !important; text-align: center !important; }
+        .order-item { flex-wrap: wrap !important; gap: 8px !important; }
+      }
+    </style>
+  </head>
+  <body style="margin:0;padding:0;background:#f7f3ef;font-family:Arial,sans-serif;color:#2f2a25;">
+    <div class="container" style="max-width:680px;margin:0 auto;padding:28px 14px;">
       <div style="background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #eadfd5;">
-        <div style="background:#8B5A2B;color:#ffffff;padding:26px 28px;">
-          <h1 style="margin:0;font-size:24px;">Gentle Stitch Crochet</h1>
+        <div class="header" style="background:#8B5A2B;color:#ffffff;padding:26px 28px;text-align:center;">
+          <h1 style="margin:0;font-size:24px;letter-spacing:0.5px;">Gentle Stitch Crochet</h1>
           <p style="margin:6px 0 0;font-size:14px;opacity:.9;">Handmade with care</p>
         </div>
 
-        <div style="padding:28px;">
+        <div class="inner-content" style="padding:28px;">
           <h2 style="margin:0 0 10px;color:#8B5A2B;font-size:22px;">${title}</h2>
           <p style="margin:0 0 18px;color:#5f564f;line-height:1.6;">${intro}</p>
 
@@ -115,29 +138,42 @@ const buildEmailLayout = ({ title, intro, order, buttons, note }) => `
         </div>
       </div>
     </div>
-  </div>
+  </body>
+  </html>
 `;
 
-const sendOrderStatusEmail = async (order, oldStatus, newStatus) => {
-  let populatedOrder = order;
-
-  if (order.user && !order.user.email) {
-    populatedOrder = await Order.findById(order._id)
-      .select('+guestAccessToken')
-      .populate('user', 'name email');
-  } else if (!order.guestAccessToken) {
-    populatedOrder = await Order.findById(order._id)
-      .select('+guestAccessToken')
-      .populate('user', 'name email');
-  }
+const sendOrderStatusEmail = async (order, oldStatus, newStatus, reviewToken = null) => {
+  const populatedOrder = await Order.findById(order._id)
+    .select('+guestAccessToken')
+    .populate('user', 'name email');
 
   const email = populatedOrder.user?.email || populatedOrder.guestEmail;
-  if (!email) return;
+  if (!email) {
+    console.error('No email available for order status notification', {
+      orderId: populatedOrder._id,
+      user: populatedOrder.user,
+      guestEmail: populatedOrder.guestEmail,
+      newStatus,
+    });
+    return;
+  }
 
   const orderLink = buildOrderLink(populatedOrder);
 
-  if (newStatus === 'shipped') {
-    return;
+  if (newStatus === 'shipped') return;
+
+  // Build correct review link based on user type
+  let reviewLink;
+  if (populatedOrder.user) {
+    reviewLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/order/${populatedOrder._id}/review`;
+  } else {
+    // guest – use the token link if available
+    if (reviewToken) {
+      reviewLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/guest-order-review/${reviewToken}`;
+    } else {
+      // fallback (should not happen)
+      reviewLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/guest-order/${populatedOrder._id}/${populatedOrder.guestAccessToken}`;
+    }
   }
 
   let subject;
@@ -165,8 +201,6 @@ const sendOrderStatusEmail = async (order, oldStatus, newStatus) => {
 
   if (newStatus === 'delivered') {
     subject = `Order Delivered #${populatedOrder._id}`;
-    const reviewLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/order/${populatedOrder._id}/review`;
-
     html = buildEmailLayout({
       title: 'Your order has been delivered',
       intro: 'We hope you love your crochet pieces. You can view your order or write a verified purchase review.',
@@ -190,12 +224,11 @@ const sendOrderStatusEmail = async (order, oldStatus, newStatus) => {
   }
 
   if (!subject || !html) return;
-
   await sendEmail({ email, subject, html });
 };
-// ---------- Create new order (COD) – supports guests and logged users ----------
+
+// ---------- Create new order ----------
 const addOrderItems = async (req, res) => {
-  // Optional authentication – sets req.user if token provided
   await optionalAuth(req);
 
   const {
@@ -207,29 +240,31 @@ const addOrderItems = async (req, res) => {
     shippingPrice,
     totalPrice,
     notes,
-    email,               // for guest orders
+    email,
   } = req.body;
 
   if (!orderItems || orderItems.length === 0) {
     return res.status(400).json({ message: 'No order items' });
   }
 
-  // Validate stock
+  const enrichedOrderItems = [];
   for (const item of orderItems) {
     const product = await Product.findById(item.product);
     if (!product || product.stock < item.quantity) {
       return res.status(400).json({ message: `Insufficient stock for ${item.name}` });
     }
+    const image = product.images && product.images.length > 0 ? product.images[0].url : '';
+    enrichedOrderItems.push({ ...item, image });
   }
 
-  // Determine user or guest
   const userId = req.user ? req.user._id : null;
   const guestEmail = !req.user ? email : undefined;
-const guestAccessToken = !req.user ? crypto.randomBytes(32).toString('hex') : undefined;
+  const guestAccessToken = !req.user ? crypto.randomBytes(32).toString('hex') : undefined;
+
   const order = new Order({
     user: userId,
     guestEmail,
-    orderItems,
+    orderItems: enrichedOrderItems,
     shippingAddress,
     paymentMethod: paymentMethod || 'cod',
     itemsPrice,
@@ -244,41 +279,33 @@ const guestAccessToken = !req.user ? crypto.randomBytes(32).toString('hex') : un
 
   const createdOrder = await order.save();
 
-  // Deduct stock
-  for (const item of orderItems) {
+  for (const item of enrichedOrderItems) {
     await Product.findByIdAndUpdate(item.product, {
       $inc: { stock: -item.quantity },
     });
   }
 
-  // Clear user's cart if logged in
   if (req.user) {
     await Cart.findOneAndDelete({ user: req.user._id });
   }
 
-  // Send confirmation email (fire and forget)
-  sendOrderStatusEmail(createdOrder, null, 'pending').catch(console.error);
+  console.log('Order created — sending pending email', { orderId: createdOrder._id, user: createdOrder.user, guestEmail: createdOrder.guestEmail });
+  await sendOrderStatusEmail(createdOrder, null, 'pending').catch((err) => {
+    console.error('Failed to send pending order email:', err);
+  });
 
   res.status(201).json(createdOrder);
 };
 
 const getGuestOrderByToken = async (req, res) => {
   const order = await Order.findById(req.params.id).select('+guestAccessToken');
-
-  if (!order) {
-    return res.status(404).json({ message: 'Order not found' });
-  }
-
+  if (!order) return res.status(404).json({ message: 'Order not found' });
   if (!order.guestAccessToken || order.guestAccessToken !== req.params.token) {
     return res.status(403).json({ message: 'Invalid or expired order link' });
   }
-
   res.json(order);
 };
 
-
-
-// ---------- Get order by ID (authenticated) ----------
 const getOrderById = async (req, res) => {
   const order = await Order.findById(req.params.id).populate('user', 'name email');
   if (!order) return res.status(404).json({ message: 'Order not found' });
@@ -288,13 +315,11 @@ const getOrderById = async (req, res) => {
   res.json(order);
 };
 
-// ---------- Get logged in user orders ----------
 const getMyOrders = async (req, res) => {
   const orders = await Order.find({ user: req.user._id }).sort({ createdAt: -1 });
   res.json(orders);
 };
 
-// ---------- Get all orders (admin) ----------
 const getOrders = async (req, res) => {
   let keyword = req.query.keyword ? req.query.keyword.trim() : '';
   const orderStatus = req.query.orderStatus ? req.query.orderStatus.trim() : '';
@@ -361,19 +386,18 @@ const getOrders = async (req, res) => {
   res.json(orders);
 };
 
-// ---------- Update order status (admin) – with email + review tokens ----------
 const updateOrderStatus = async (req, res) => {
   let { status, trackingNumber } = req.body;
-
   if (status === 'processed') status = 'processing';
 
   const allowedStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
-
   if (!allowedStatuses.includes(status)) {
     return res.status(400).json({ message: 'Invalid order status' });
   }
 
-  const order = await Order.findById(req.params.id).select('+guestAccessToken');
+  const order = await Order.findById(req.params.id)
+    .select('+guestAccessToken')
+    .populate('user', 'email');
   if (!order) return res.status(404).json({ message: 'Order not found' });
 
   const oldStatus = order.orderStatus;
@@ -387,16 +411,16 @@ const updateOrderStatus = async (req, res) => {
 
   await order.save();
 
-  sendOrderStatusEmail(order, oldStatus, status).catch(console.error);
-
+  // Generate review token if delivered (for guests)
+  let reviewToken = null;
   if (status === 'delivered') {
     try {
       const tokens = await generateReviewTokensForOrder(order);
-
-      for (const tokenDoc of tokens) {
-        const product = await Product.findById(tokenDoc.product);
-        if (product) {
-          await sendReviewInvitation(order, product, tokenDoc.token);
+      if (tokens.length > 0) {
+        reviewToken = tokens[0].token;
+        // For guests, send the invitation email
+        if (order.guestEmail) {
+          await sendReviewInvitation(order, reviewToken);
         }
       }
     } catch (err) {
@@ -404,9 +428,115 @@ const updateOrderStatus = async (req, res) => {
     }
   }
 
+  // Send status email with the review token (if any)
+  sendOrderStatusEmail(order, oldStatus, status, reviewToken).catch(console.error);
+
   res.json({ message: 'Order status updated', order });
 };
-// ---------- Update payment status to paid (admin) ----------
+
+// ---------- Get order for review (logged-in user) ----------
+const getOrderForReview = async (req, res) => {
+  const order = await Order.findById(req.params.id)
+    .populate('user', 'name email')
+    .populate({
+      path: 'orderItems.product',
+      select: 'name images price',
+    });
+
+  if (!order) return res.status(404).json({ message: 'Order not found' });
+
+  if (
+    order.user &&
+    order.user._id.toString() !== req.user._id.toString() &&
+    req.user.role !== 'admin'
+  ) {
+    return res.status(403).json({ message: 'Not authorized' });
+  }
+
+  if (order.orderStatus !== 'delivered') {
+    return res.status(400).json({ message: 'You can only review delivered orders' });
+  }
+
+  const itemsWithReviewStatus = await Promise.all(
+    order.orderItems.map(async (item) => {
+      const product = await Product.findById(item.product._id);
+      if (!product) return { ...item.toObject(), alreadyReviewed: false };
+
+      const existingReview = product.reviews.find(
+        (r) =>
+          r.user &&
+          r.user.toString() === req.user._id.toString() &&
+          r.order &&
+          r.order.toString() === order._id.toString()
+      );
+
+      return {
+        ...item.toObject(),
+        alreadyReviewed: !!existingReview,
+        reviewId: existingReview?._id || null,
+        productImage: product.images?.[0]?.url || '',
+      };
+    })
+  );
+
+  res.json({
+    order: {
+      _id: order._id,
+      orderStatus: order.orderStatus,
+      createdAt: order.createdAt,
+    },
+    items: itemsWithReviewStatus,
+  });
+};
+
+// ---------- Get order for review (guest via token) ----------
+const getGuestOrderForReview = async (req, res) => {
+  const { token } = req.params;
+  const tokenDoc = await ReviewToken.findOne({ token, isUsed: false });
+  if (!tokenDoc) {
+    return res.status(400).json({ message: 'Invalid or expired review link' });
+  }
+
+  const order = await Order.findById(tokenDoc.order)
+    .populate({
+      path: 'orderItems.product',
+      select: 'name images price',
+    });
+  if (!order) {
+    return res.status(404).json({ message: 'Order not found' });
+  }
+  if (order.orderStatus !== 'delivered') {
+    return res.status(400).json({ message: 'This order is not yet delivered' });
+  }
+
+  const itemsWithStatus = await Promise.all(
+    order.orderItems.map(async (item) => {
+      const product = await Product.findById(item.product._id);
+      if (!product) return { ...item.toObject(), alreadyReviewed: false };
+
+      const existing = product.reviews.find(
+        (r) =>
+          r.email === tokenDoc.email &&
+          r.order &&
+          r.order.toString() === order._id.toString()
+      );
+      return {
+        ...item.toObject(),
+        alreadyReviewed: !!existing,
+        productImage: product.images?.[0]?.url || '',
+      };
+    })
+  );
+
+  res.json({
+    orderId: order._id,
+    token: tokenDoc.token,
+    email: tokenDoc.email,
+    items: itemsWithStatus,
+  });
+};
+
+// ---------- Update payment status ----------
 const updatePaymentStatus = async (req, res) => {
   const order = await Order.findById(req.params.id);
   if (!order) return res.status(404).json({ message: 'Order not found' });
@@ -429,6 +559,7 @@ const updatePaymentStatus = async (req, res) => {
 
   res.json({ message: 'Payment status updated to paid' });
 };
+
 const deleteOrder = async (req, res) => {
   const order = await Order.findById(req.params.id);
   if (!order) return res.status(404).json({ message: 'Order not found' });
@@ -445,4 +576,6 @@ module.exports = {
   updatePaymentStatus,
   deleteOrder,
   getGuestOrderByToken,
+  getOrderForReview,
+  getGuestOrderForReview, 
 };

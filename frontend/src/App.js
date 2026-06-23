@@ -27,6 +27,10 @@ import OrderSuccessPage from './pages/OrderSuccessPage';
 import PrivateRoute from './components/Common/PrivateRoute';
 import ProfilePage from './pages/ProfilePage';
 import OrderDetailPage from './pages/OrderDetailPage';
+import OrderReviewPage from './pages/OrderReviewPage'; // <-- ADD THIS IMPORT
+
+// Guest review page (token-based)
+import GuestOrderReviewPage from './pages/GuestOrderReviewPage';
 
 // Admin pages
 import AdminRoute from './components/Common/AdminRoute';
@@ -40,7 +44,6 @@ import AdminAnalyticsPage from './pages/Admin/AdminAnalyticsPage';
 import AdminInventoryPage from './pages/Admin/AdminInventoryPage';
 import AdminSettingsPage from './pages/Admin/AdminSettingsPage';
 import AdminProfilePage from './pages/Admin/AdminProfilePage';
-import GuestReviewPage from './pages/GuestReviewPage';
 
 // Layout for public pages (includes header & footer)
 const PublicLayout = ({ children }) => (
@@ -57,7 +60,7 @@ function App() {
       <div className="flex flex-col min-h-screen">
         <ScrollToTop />
         <Routes>
-          
+          {/* Public routes */}
           <Route path="/" element={<PublicLayout><HomePage /></PublicLayout>} />
           <Route path="/about" element={<PublicLayout><AboutUsPage /></PublicLayout>} />
           <Route path="/wishlist" element={<PublicLayout><WishlistPage /></PublicLayout>} />
@@ -72,9 +75,16 @@ function App() {
           <Route path="/shop" element={<PublicLayout><ShopPage /></PublicLayout>} />
           <Route path="/product/:id" element={<PublicLayout><ProductDetailPage /></PublicLayout>} />
           <Route path="/cart" element={<PublicLayout><CartPage /></PublicLayout>} />
-          <Route path="/guest-review/:token" element={<PublicLayout><GuestReviewPage /></PublicLayout>} />
           <Route path="/checkout" element={<PublicLayout><CheckoutPage /></PublicLayout>} />
           <Route path="/order-success/:id" element={<PublicLayout><OrderSuccessPage /></PublicLayout>} />
+
+          {/* Guest order review – token-based (the main link for guests) */}
+          <Route path="/guest-order-review/:token" element={<PublicLayout><GuestOrderReviewPage /></PublicLayout>} />
+
+          {/* Fallback guest order (legacy) – keep if needed */}
+          <Route path="/guest-review/:token" element={<PublicLayout><GuestOrderReviewPage /></PublicLayout>} />
+
+          {/* Protected user routes */}
           <Route
             path="/profile"
             element={
@@ -83,11 +93,15 @@ function App() {
               </PrivateRoute>
             }
           />
-          <Route path="/order/:id" element={<OrderDetailPage />} />
-<Route path="/guest-order/:id/:token" element={<OrderDetailPage />} />
-<Route path="/guest-review/:token" element={<GuestReviewPage />} />
 
-          
+          {/* Order detail pages – direct and guest token */}
+          <Route path="/order/:id" element={<OrderDetailPage />} />
+          <Route path="/guest-order/:id/:token" element={<OrderDetailPage />} />
+
+          {/* Review pages for logged-in users (orderId based) */}
+          <Route path="/order/:orderId/review" element={<OrderReviewPage />} />
+
+          {/* Admin routes */}
           <Route path="/admin" element={<AdminRoute><AdminDashboardPage /></AdminRoute>} />
           <Route path="/admin/products" element={<AdminRoute><AdminProductsPage /></AdminRoute>} />
           <Route path="/admin/categories" element={<AdminRoute><AdminCategoriesPage /></AdminRoute>} />

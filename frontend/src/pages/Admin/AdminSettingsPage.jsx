@@ -81,10 +81,10 @@ const AdminSettingsPage = () => {
     <AdminLayout>
       {notification && <CenteredNotification {...notification} onClose={() => setNotification(null)} />}
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6">Store Settings</h1>
+        <h1 className="text-2xl font-bold mb-6" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Store Settings</h1>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="bg-white rounded-xl shadow-sm p-6 space-y-4">
-            <h2 className="text-lg font-semibold">General</h2>
+            <h2 className="text-lg font-semibold" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>General</h2>
             <div>
               <label className="block text-gray-700 mb-1">Store Name</label>
               <input type="text" name="storeName" value={settings.storeName} onChange={handleChange} className="input-field" />
@@ -107,7 +107,7 @@ const AdminSettingsPage = () => {
           </div>
 
           <div className="bg-white rounded-xl shadow-sm p-6 space-y-4">
-            <h2 className="text-lg font-semibold">Shipping & Payment</h2>
+            <h2 className="text-lg font-semibold" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Shipping & Payment</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div><label>Shipping Fee (Rs.)</label><input type="number" name="shippingFee" value={settings.shippingFee} onChange={handleChange} className="input-field" /></div>
               <div><label>Free Shipping Threshold (Rs.)</label><input type="number" name="freeShippingThreshold" value={settings.freeShippingThreshold} onChange={handleChange} className="input-field" /></div>
@@ -119,7 +119,7 @@ const AdminSettingsPage = () => {
           </div>
 
           <div className="bg-white rounded-xl shadow-sm p-6 space-y-4">
-            <h2 className="text-lg font-semibold">Social Links</h2>
+            <h2 className="text-lg font-semibold" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Social Links</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div><label>Facebook</label><input type="text" name="facebook" value={settings.socialLinks.facebook} onChange={handleSocialChange} className="input-field" /></div>
               <div><label>Instagram</label><input type="text" name="instagram" value={settings.socialLinks.instagram} onChange={handleSocialChange} className="input-field" /></div>

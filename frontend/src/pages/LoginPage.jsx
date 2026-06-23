@@ -137,17 +137,12 @@ const LoginPage = () => {
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: 'url(https://images.pexels.com/photos/3832504/close-up-of-crochet-wool-balls-3832504.jpg?auto=compress&cs=tinysrgb&w=1600)',
+            backgroundImage: 'url(https://res.cloudinary.com/dlcrtkvzq/image/upload/v1782027254/login_image_v98c43.png)',
+            objectFit: 'cover',
           }}
         ></div>
-        <div className="absolute inset-0 bg-black/30"></div>
-        <div className="relative z-10 flex flex-col justify-center items-center text-center text-white h-full p-8 lg:p-16">
-          <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-4 drop-shadow-lg">Welcome Back</h1>
-          <p className="text-base md:text-lg lg:text-xl max-w-md lg:max-w-lg mb-6">
-            Log in to access your personalized crochet experience, track orders, and discover new handmade treasures.
-          </p>
-          <div className="flex gap-3 text-2xl md:text-3xl opacity-80">🧶 🧵 ✨</div>
-        </div>
+        
+        
       </div>
 
       <div className="lg:w-1/3 flex items-center justify-center p-6 md:p-10 bg-white">

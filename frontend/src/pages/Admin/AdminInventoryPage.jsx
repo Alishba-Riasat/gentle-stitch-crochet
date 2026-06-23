@@ -48,11 +48,11 @@ const AdminInventoryPage = () => {
 
   return (
     <AdminLayout>
-      <h1 className="text-2xl font-bold mb-6">Inventory</h1>
+      <h1 className="text-2xl font-bold mb-6" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Inventory</h1>
 
       {/* Out of Stock Section */}
       <div className="mb-10">
-        <h2 className="text-xl font-semibold text-red-600 mb-4 flex items-center gap-2">
+        <h2 className="text-xl font-semibold text-red-600 mb-4 flex items-center gap-2" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
           
           Out of Stock ({outOfStock.length})
         </h2>

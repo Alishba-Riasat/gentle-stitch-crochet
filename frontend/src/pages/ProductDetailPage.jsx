@@ -27,7 +27,6 @@ const ProductDetailPage = () => {
     };
   }, [dispatch, id]);
 
-  // Fetch related products when product is loaded
   useEffect(() => {
     const fetchRelated = async () => {
       if (!product || !product.category) return;
@@ -56,14 +55,14 @@ const ProductDetailPage = () => {
     addToCart(product, quantity);
   };
 
-  if (loading) return <div className="container mx-auto px-4 py-12 text-center">Loading product...</div>;
-  if (error) return <div className="container mx-auto px-4 py-12 text-center text-red-500">{error}</div>;
+  if (loading) return <div className="container mx-auto px-4 md:px-6 lg:px-10 py-12 text-center">Loading product...</div>;
+  if (error) return <div className="container mx-auto px-4 md:px-6 lg:px-12 py-12 text-center text-red-500">{error}</div>;
   if (!product) return null;
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
+    <div className="container mx-auto px-4 py-8 lg:px-10 max-w-7xl">
       <div className="grid md:grid-cols-2 gap-8">
-        {/* Images – now with object-contain to prevent cropping */}
+        {/* Images */}
         <div>
           <div className="border rounded-lg overflow-hidden bg-gray-50 flex items-center justify-center">
             <img
@@ -91,7 +90,7 @@ const ProductDetailPage = () => {
 
         {/* Info */}
         <div>
-          <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
+          <h1 className="text-3xl font-bold mb-2" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>{product.name}</h1>
           <div className="flex items-center mb-2">
             <div className="flex text-yellow-400">
               {'★'.repeat(Math.floor(product.rating))}
@@ -135,74 +134,24 @@ const ProductDetailPage = () => {
               </button>
             </div>
           )}
-          <div className="border-t border-gray-200 mb-8"></div>
-          <p className="text-gray-700 leading-relaxed">{product.description}</p>
-        </div>
-      </div>
-
-      {/* Reviews Section – modern and stylish */}
-      <div className="mt-12">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-800">Customer Reviews</h2>
-          {product.numReviews > 0 && (
-            <div className="flex items-center gap-1">
-              <div className="flex text-yellow-400">
-                {'★'.repeat(Math.floor(product.rating))}
-                {'☆'.repeat(5 - Math.floor(product.rating))}
-              </div>
-              <span className="text-gray-600 text-sm ml-1">({product.numReviews})</span>
+          <div className="border-t border-gray-200 pt-6">
+            <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">
+              Description
+            </h3>
+            <div className="bg-gray-50 rounded-lg p-4 border border-gray-100 overflow-hidden">
+              <p className="text-gray-700 leading-relaxed whitespace-pre-wrap break-words">
+                {product.description}
+              </p>
             </div>
-          )}
+          </div>
         </div>
-        <div className="border-t border-gray-200 mb-6"></div>
-
-        {product.reviews && product.reviews.length > 0 ? (
-          <div className="space-y-6">
-            {product.reviews.map((review, idx) => (
-              <div key={idx} className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                <div className="flex items-start gap-4">
-                  {/* Avatar (initials) */}
-                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">
-                    {review.name.charAt(0).toUpperCase()}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex flex-wrap justify-between items-start gap-2">
-                      <div>
-                        <p className="font-semibold text-gray-800">{review.name}</p>
-                        <p className="text-xs text-gray-400 mt-1">
-                          {new Date(review.createdAt).toLocaleDateString('en-PK', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric',
-                          })}
-                        </p>
-                      </div>
-                      <div className="flex text-yellow-400">
-                        {[...Array(5)].map((_, i) =>
-                          i < review.rating ? (
-                            <StarSolid key={i} className="h-4 w-4" />
-                          ) : (
-                            <StarOutline key={i} className="h-4 w-4" />
-                          )
-                        )}
-                      </div>
-                    </div>
-                    <p className="mt-3 text-gray-600 leading-relaxed">{review.comment}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="bg-gray-50 rounded-xl p-8 text-center">
-            <p className="text-gray-500">No reviews yet. Be the first to review!</p>
-          </div>
-        )}
       </div>
 
-      {/* You may also like section */}
+      <ProductReviews productId={product._id} />
+
+      {/* You may also like */}
       <div className="mt-16">
-        <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6">You may also like</h2>
+        <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>You may also like</h2>
         <div className="border-t border-gray-200 mb-6"></div>
         {loadingRelated ? (
           <div className="flex justify-center py-12">

@@ -100,8 +100,8 @@ const CartPage = () => {
 
   if (items.length === 0) {
     return (
-      <div className="container mx-auto px-4 py-16 text-center">
-        <h1 className="text-3xl font-bold mb-4">Your Cart is Empty</h1>
+      <div className="container mx-auto px-4 md:px-6 lg:px-10 py-16 text-center">
+        <h1 className="text-3xl font-bold mb-4" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Your Cart is Empty</h1>
         <p className="text-gray-500 mb-8">Looks like you haven't added anything yet.</p>
         <Link to="/shop" className="btn-primary inline-block">Continue Shopping</Link>
       </div>
@@ -119,7 +119,7 @@ const CartPage = () => {
         </div>
       )}
 
-      <h1 className="text-3xl font-bold text-center mb-8">Shopping Cart</h1>
+      <h1 className="text-3xl font-bold text-center mb-8" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Shopping Cart</h1>
       <div className="border-t border-gray-200 mb-8"></div>
 
       <div className="flex flex-col lg:flex-row gap-8">
