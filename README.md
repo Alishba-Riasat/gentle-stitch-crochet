@@ -1,70 +1,148 @@
-# Getting Started with Create React App
+# Gentle Stitch Crochet
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A full-stack e-commerce platform for handmade crochet products built using the MERN Stack. The application provides a complete online shopping experience for both guest users and registered users, along with an admin dashboard for managing products, users, and orders.
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+## Overview
 
-### `npm start`
+Gentle Stitch Crochet is designed to simplify the process of browsing, purchasing, and managing handmade crochet products online. The platform offers secure authentication, product reviews, wishlist functionality, order management, image handling, and automated email notifications.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+---
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Features
 
-### `npm test`
+### Customer Features
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- Browse and search products
+- View detailed product information
+- Guest user shopping support
+- User registration and login
+- Secure authentication and authorization
+- Shopping cart functionality
+- Wishlist management
+- Product reviews and ratings
+- Checkout and order placement
+- Order tracking and status updates
+- Responsive design for mobile and desktop devices
 
-### `npm run build`
+### Admin Features
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- Admin dashboard
+- Product management
+- User management
+- Order management
+- Review management
+- Inventory monitoring
+- Order status updates
+- Website content management
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Additional Features
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+- Cloudinary image upload and storage
+- Automated email notifications
+- RESTful API architecture
+- Secure data management
+- Responsive user interface
 
-### `npm run eject`
+---
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## Technologies Used
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### Frontend
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+- React.js
+- JavaScript
+- HTML5
+- CSS3
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### Backend
 
-## Learn More
+- Node.js
+- Express.js
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### Database
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+- MongoDB
+- Mongoose
 
-### Code Splitting
+### Cloud Services
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+- Cloudinary
 
-### Analyzing the Bundle Size
+### Development Tools
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+- Git
+- GitHub
+- Postman
+- VS Code
 
-### Making a Progressive Web App
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+## System Modules
 
-### Advanced Configuration
+### Authentication Module
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+- User Registration
+- User Login
+- Protected Routes
+- Role-Based Access Control
 
-### Deployment
+### Product Module
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+- Product Listing
+- Product Details
+- Product Search
+- Product Reviews
 
-### `npm run build` fails to minify
+### Shopping Module
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- Shopping Cart
+- Wishlist
+- Checkout Process
+- Order Placement
+
+### Order Module
+
+- Order Tracking
+- Order History
+- Order Status Updates
+- Email Notifications
+
+### Admin Module
+
+- Dashboard Overview
+- Product Management
+- User Management
+- Order Management
+
+---
+
+## Project Architecture
+
+Frontend (React.js)
+
+↓
+
+REST API
+
+↓
+
+Backend (Node.js + Express.js)
+
+↓
+
+MongoDB Database
+
+↓
+
+Cloudinary (Image Storage)
+
+---
+
+## Installation
+
+### Clone Repository
+
+```bash
+git clone https://github.com/Alishba-Riasat/gentle-stitch-crochet.git
